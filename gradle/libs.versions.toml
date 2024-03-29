@@ -1,0 +1,30 @@
+[versions]
+kotlin = "1.9.23"
+android = "8.2.2"
+jna = "5.14.0"
+javacpp = "1.5.10"
+nokee = "0.4.0"
+compatibility = "0.14.0"
+publish = "0.28.0"
+benchmark = "0.4.10"
+ktlintPlugin = "12.1.0"
+ktlint = "1.2.1"
+
+[libraries]
+jna-core = { module = "net.java.dev.jna:jna", version.ref = "jna" }
+kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
+
+[plugins]
+kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+kotlin-benchmark = { id = "org.jetbrains.kotlinx.benchmark", version.ref = "benchmark" }
+
+android-library = { id = "com.android.library", version.ref = "android" }
+
+javacpp = { id = "org.bytedeco.gradle-javacpp-build", version.ref = "javacpp" }
+nokee-jni = { id = "dev.nokee.jni-library", version.ref = "nokee" }
+nokee-cpp = { id = "dev.nokee.cpp-language", version.ref = "nokee" }
+
+compatibility = { id = "org.jetbrains.kotlinx.binary-compatibility-validator", version.ref = "compatibility" }
+publish = { id = "com.vanniktech.maven.publish", version.ref = "publish" }
+ktlint = { id = "org.jlleitschuh.gradle.ktlint", version.ref = "ktlintPlugin" }
