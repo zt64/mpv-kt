@@ -1,17 +1,26 @@
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.jlleitschuh.gradle.ktlint.KtlintExtension
 
 plugins {
+    // Kotlin
     alias(libs.plugins.kotlin.multiplatform) apply false
     alias(libs.plugins.kotlin.jvm) apply false
+    alias(libs.plugins.kotlin.cocoapods) apply false
 
+    // Compose
+    alias(libs.plugins.compose.compiler) apply false
+    alias(libs.plugins.compose.jb) apply false
+
+    // Android
     alias(libs.plugins.android.library) apply false
+    alias(libs.plugins.android.application) apply false
 
+    // Native code compilation
     alias(libs.plugins.nokee.jni) apply false
     alias(libs.plugins.nokee.cpp) apply false
-    alias(libs.plugins.javacpp) apply false
 
+    // Maintenance
     alias(libs.plugins.ktlint) apply false
+    alias(libs.plugins.kover) apply false
     alias(libs.plugins.compatibility)
 }
 
@@ -28,15 +37,6 @@ allprojects {
     version = "1.0.0"
 }
 
-subprojects {
-    tasks.withType<KotlinCompile>().configureEach {
-        kotlinOptions {
-            jvmTarget = "17"
-            freeCompilerArgs += "-Xexpect-actual-classes"
-        }
-    }
-}
-
 apiValidation {
-    ignoredProjects += listOf("jvm")
+    ignoredProjects += listOf("sample")
 }

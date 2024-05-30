@@ -10,7 +10,7 @@ Kotlin multiplatform wrapper for mpv
 - Linux (x86_64, arm64)
 - Windows (x86_64)
 - macOS (x86_64, arm64)
-- Android (arm64-v8a, x86_64)
+- Android (armeabi-v7a, arm64-v8a, x86, x86_64)
 - JVM
 
 ## Setup
@@ -18,7 +18,7 @@ Kotlin multiplatform wrapper for mpv
 ### Gradle
 
 ```
-implementation("dev.zt64:mpvkt:x.y.z")
+implementation("dev.zt64.mpvkt:mpvkt:x.y.z")
 ```
 
 ## Usage
@@ -27,8 +27,8 @@ implementation("dev.zt64:mpvkt:x.y.z")
 // Create a mpv instance by calling the constructor
 val mpv = Mpv()
 
-mpv.requestLogMessages("v")
-mpv.setProperty()
+mpv.requestLogMessages(MpvLogLevel.VERBOSE)
+mpv.setProperty("vo", "gpu")
 
 // Set up the mpv instance
 mpv.init()
@@ -36,10 +36,8 @@ mpv.init()
 mpv.command("loadfile", "path/to/file.mp4")
 
 while (true) {
-    val event = mpv.waitEvent()
-    if (event is MpvEvent.FileLoaded) {
-        break
-    }
+    val event = mpv.waitEvent(1000)
+    if (event is MpvEvent.EndFile) break
 }
 
 mpv.close()
@@ -51,4 +49,5 @@ Contributions are welcome!
 
 ## License
 
-This project is licensed under the GNU GPL v3.0 License - see the [LICENSE](LICENSE) file for details
+This project is licensed under the GNU GPL v3.0 License - see the [LICENSE](LICENSE) file for
+details

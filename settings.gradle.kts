@@ -8,6 +8,8 @@ pluginManagement {
         google()
         maven("https://repo.nokee.dev/snapshot")
     }
+
+    includeBuild("build-logic")
 }
 
 dependencyResolutionManagement {
@@ -21,5 +23,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "mpv-kt"
 
-include(":mpv")
-include(":jvm")
+include("mpv", "jni", "compose", "sample")

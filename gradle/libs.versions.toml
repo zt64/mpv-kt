@@ -1,30 +1,40 @@
 [versions]
-kotlin = "1.9.23"
+kotlin = "2.0.0"
 android = "8.2.2"
-jna = "5.14.0"
-javacpp = "1.5.10"
+compose = "1.6.10"
+appcompat = "1.6.1"
 nokee = "0.4.0"
+mpfilepicker = "3.1.0"
+calf = "0.4.0"
 compatibility = "0.14.0"
+kover = "0.7.6"
 publish = "0.28.0"
-benchmark = "0.4.10"
-ktlintPlugin = "12.1.0"
+ktlintPlugin = "12.1.1"
 ktlint = "1.2.1"
 
 [libraries]
-jna-core = { module = "net.java.dev.jna:jna", version.ref = "jna" }
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
+androidx-activity = { module = "androidx.activity:activity-compose", version = "1.9.0" }
+androidx-appcompat = { module = "androidx.appcompat:appcompat", version.ref = "appcompat" }
+io = { module = "org.jetbrains.kotlinx:kotlinx-io-core", version = "0.3.5" }
+mpfilepicker = { module = "com.darkrockstudios:mpfilepicker", version.ref = "mpfilepicker" }
+calf-filepicker = { module = "com.mohamedrejeb.calf:calf-file-picker", version.ref = "calf" }
 
 [plugins]
 kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
-kotlin-benchmark = { id = "org.jetbrains.kotlinx.benchmark", version.ref = "benchmark" }
+kotlin-cocoapods = { id = "org.jetbrains.kotlin.native.cocoapods", version.ref = "kotlin" }
+
+compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+compose-jb = { id = "org.jetbrains.compose", version.ref = "compose" }
 
 android-library = { id = "com.android.library", version.ref = "android" }
+android-application = { id = "com.android.application", version.ref = "android" }
 
-javacpp = { id = "org.bytedeco.gradle-javacpp-build", version.ref = "javacpp" }
 nokee-jni = { id = "dev.nokee.jni-library", version.ref = "nokee" }
 nokee-cpp = { id = "dev.nokee.cpp-language", version.ref = "nokee" }
 
 compatibility = { id = "org.jetbrains.kotlinx.binary-compatibility-validator", version.ref = "compatibility" }
+kover = { id = "org.jetbrains.kotlinx.kover", version.ref = "kover" }
 publish = { id = "com.vanniktech.maven.publish", version.ref = "publish" }
 ktlint = { id = "org.jlleitschuh.gradle.ktlint", version.ref = "ktlintPlugin" }

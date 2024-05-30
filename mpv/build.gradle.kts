@@ -1,15 +1,13 @@
+
 import com.vanniktech.maven.publish.KotlinMultiplatform
 import com.vanniktech.maven.publish.SonatypeHost
+import dev.zt64.mpvkt.gradle.native
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
-import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
-import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
-import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTargetWithHostTests
 
 plugins {
-    alias(libs.plugins.kotlin.multiplatform)
+    id("kmp-lib")
     alias(libs.plugins.android.library)
-    // alias(libs.plugins.nokee.jni)
-    alias(libs.plugins.nokee.cpp)
+    alias(libs.plugins.kover)
     alias(libs.plugins.publish)
 }
 
@@ -18,8 +16,6 @@ description = "MPV Kotlin bindings"
 @OptIn(ExperimentalKotlinGradlePluginApi::class)
 kotlin {
     explicitApi()
-
-    jvmToolchain(17)
 
     applyDefaultHierarchyTemplate {
         common {
@@ -31,11 +27,12 @@ kotlin {
     }
 
     jvm()
+
     androidTarget {
         publishLibraryVariants("release")
     }
 
-    nativeTarget {
+    native {
         compilations.getByName("main") {
             cinterops.create("libmpv")
         }
@@ -45,28 +42,24 @@ kotlin {
         commonTest {
             dependencies {
                 implementation(libs.kotlin.test)
+                implementation(libs.io)
             }
         }
+
         named("jvmCommonMain") {
             dependencies {
-                // implementation(projects.jvm)
-                implementation(libs.jna.core)
-            }
-        }
-        nativeMain {
-            languageSettings {
-                optIn("kotlinx.cinterop.ExperimentalForeignApi")
+                implementation(projects.jni)
             }
         }
     }
 
     compilerOptions {
-        freeCompilerArgs.add("-Xexpect-actual-classes")
+        optIn.addAll("kotlinx.cinterop.ExperimentalForeignApi")
     }
 }
 
 android {
-    namespace = group.toString()
+    namespace = "$group"
     compileSdk = 34
 
     defaultConfig {
@@ -77,7 +70,7 @@ android {
 mavenPublishing {
     publishToMavenCentral(SonatypeHost.CENTRAL_PORTAL, automaticRelease = true)
     signAllPublications()
-    coordinates(group.toString(), "mpv-kt", version.toString())
+    coordinates("$group", "mpv-kt", "$version")
     configure(KotlinMultiplatform(sourcesJar = true))
 
     pom {
@@ -107,20 +100,4 @@ mavenPublishing {
             developerConnection = "scm:git:ssh://github.com/zt64/mpv-kt.git"
         }
     }
-}
-
-fun KotlinMultiplatformExtension.nativeTarget(
-    configure: Action<KotlinNativeTarget>
-): KotlinNativeTargetWithHostTests {
-    val os = System.getProperty("os.name").lowercase()
-    val nativeTarget = when {
-        os.contains("win") -> mingwX64()
-        os.contains("linux") -> linuxX64()
-        os.contains("mac") -> macosX64()
-        else -> throw IllegalStateException("Unsupported OS: $os")
-    }
-
-    configure(nativeTarget)
-
-    return nativeTarget
 }
