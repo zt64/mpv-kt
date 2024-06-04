@@ -31,6 +31,13 @@ jobs:
     strategy:
       matrix:
         os: [ ubuntu-latest, macos-latest, windows-latest ]
+        include:
+          - os: ubuntu-latest
+            deps-cmd: sudo apt install mpv
+          - os: macos-latest
+            deps-cmd: brew install mpv
+          - os: windows-latest
+            deps-cmd: choco install mpv
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout
@@ -47,6 +54,9 @@ jobs:
 
       - name: Gradle Wrapper Validation
         uses: gradle/actions/wrapper-validation@v3
+
+      - name: Install dependencies 
+        run: ${{ runner.deps-cmd }}
 
       - name: Cache konan directory
         uses: actions/cache@v4
