@@ -2,7 +2,7 @@
 kotlin = "2.0.0"
 android = "8.2.2"
 compose = "1.6.10"
-appcompat = "1.6.1"
+appcompat = "1.7.0"
 nokee = "0.4.0"
 mpfilepicker = "3.1.0"
 calf = "0.4.1"
