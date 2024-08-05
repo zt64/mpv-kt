@@ -16,7 +16,7 @@ ktlint = "1.2.1"
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
 androidx-activity = { module = "androidx.activity:activity-compose", version = "1.9.0" }
 androidx-appcompat = { module = "androidx.appcompat:appcompat", version.ref = "appcompat" }
-io = { module = "org.jetbrains.kotlinx:kotlinx-io-core", version = "0.4.0" }
+io = { module = "org.jetbrains.kotlinx:kotlinx-io-core", version = "0.5.1" }
 mpfilepicker = { module = "com.darkrockstudios:mpfilepicker", version.ref = "mpfilepicker" }
 calf-filepicker = { module = "com.mohamedrejeb.calf:calf-file-picker", version.ref = "calf" }
 
