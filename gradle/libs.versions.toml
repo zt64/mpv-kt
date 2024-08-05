@@ -1,6 +1,6 @@
 [versions]
 kotlin = "2.0.0"
-android = "8.5.0"
+android = "8.5.1"
 compose = "1.6.11"
 appcompat = "1.7.0"
 nokee = "0.4.0"
