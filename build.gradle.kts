@@ -14,11 +14,9 @@ plugins {
     alias(libs.plugins.android.library) apply false
     alias(libs.plugins.android.application) apply false
 
-    // Native code compilation
-    alias(libs.plugins.nokee.jni) apply false
-    alias(libs.plugins.nokee.cpp) apply false
-
     // Maintenance
+    alias(libs.plugins.dockcross) apply false
+    alias(libs.plugins.shadow) apply false
     alias(libs.plugins.ktlint) apply false
     alias(libs.plugins.kover) apply false
     alias(libs.plugins.compatibility)

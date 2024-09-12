@@ -1,11 +1,14 @@
 [versions]
 kotlin = "2.0.20"
 android = "8.6.0"
+coroutines = "1.8.1"
 compose = "1.6.11"
 appcompat = "1.7.0"
-nokee = "0.4.0"
-mpfilepicker = "3.1.0"
 calf = "0.5.5"
+
+# Maintenance
+dockcross = "0.2.0"
+shadow = "8.1.1"
 compatibility = "0.16.3"
 kover = "0.8.3"
 publish = "0.29.0"
@@ -14,10 +17,10 @@ ktlint = "1.2.1"
 
 [libraries]
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
+coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "coroutines" }
 androidx-activity = { module = "androidx.activity:activity-compose", version = "1.9.2" }
 androidx-appcompat = { module = "androidx.appcompat:appcompat", version.ref = "appcompat" }
 io = { module = "org.jetbrains.kotlinx:kotlinx-io-core", version = "0.5.3" }
-mpfilepicker = { module = "com.darkrockstudios:mpfilepicker", version.ref = "mpfilepicker" }
 calf-filepicker = { module = "com.mohamedrejeb.calf:calf-file-picker", version.ref = "calf" }
 
 [plugins]
@@ -31,9 +34,9 @@ compose-jb = { id = "org.jetbrains.compose", version.ref = "compose" }
 android-library = { id = "com.android.library", version.ref = "android" }
 android-application = { id = "com.android.application", version.ref = "android" }
 
-nokee-jni = { id = "dev.nokee.jni-library", version.ref = "nokee" }
-nokee-cpp = { id = "dev.nokee.cpp-language", version.ref = "nokee" }
-
+# Maintenance
+shadow = { id = "com.github.johnrengelman.shadow", version.ref = "shadow" }
+dockcross = { id = "tel.schich.dockcross", version.ref = "dockcross" }
 compatibility = { id = "org.jetbrains.kotlinx.binary-compatibility-validator", version.ref = "compatibility" }
 kover = { id = "org.jetbrains.kotlinx.kover", version.ref = "kover" }
 publish = { id = "com.vanniktech.maven.publish", version.ref = "publish" }
