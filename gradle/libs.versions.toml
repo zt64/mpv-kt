@@ -20,7 +20,7 @@ kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotl
 coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "coroutines" }
 androidx-activity = { module = "androidx.activity:activity-compose", version = "1.9.2" }
 androidx-appcompat = { module = "androidx.appcompat:appcompat", version.ref = "appcompat" }
-io = { module = "org.jetbrains.kotlinx:kotlinx-io-core", version = "0.5.3" }
+io = { module = "org.jetbrains.kotlinx:kotlinx-io-core", version = "0.5.4" }
 calf-filepicker = { module = "com.mohamedrejeb.calf:calf-file-picker", version.ref = "calf" }
 
 [plugins]
