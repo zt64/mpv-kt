@@ -1,0 +1,26 @@
+public final class dev/zt64/mpvkt/compose/MpvPlayerKt {
+	public static final fun MpvPlayer (Ldev/zt64/mpvkt/compose/MpvState;Landroidx/compose/ui/Modifier;Landroidx/compose/runtime/Composer;II)V
+}
+
+public final class dev/zt64/mpvkt/compose/MpvState {
+	public static final field $stable I
+	public static final field Companion Ldev/zt64/mpvkt/compose/MpvState$Companion;
+	public fun <init> ()V
+	public fun <init> (Ljava/lang/Long;)V
+	public synthetic fun <init> (Ljava/lang/Long;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getDuration ()F
+	public final fun getPaused ()Z
+	public final fun getPosition ()F
+	public final fun getVolume ()F
+	public final fun setPaused (Z)V
+}
+
+public final class dev/zt64/mpvkt/compose/MpvState$Companion {
+	public final fun getSaver ()Landroidx/compose/runtime/saveable/Saver;
+}
+
+public final class dev/zt64/mpvkt/compose/MpvStateKt {
+	public static final fun rememberMpvState (Landroidx/compose/runtime/Composer;I)Ldev/zt64/mpvkt/compose/MpvState;
+	public static final fun rememberMpvState (Ljava/lang/String;Landroidx/compose/runtime/Composer;I)Ldev/zt64/mpvkt/compose/MpvState;
+}
+

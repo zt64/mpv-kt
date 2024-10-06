@@ -1,7 +1,11 @@
 package dev.zt64.mpvkt
 
-public actual fun Mpv.command(vararg args: String) {
-    LibMpv.command(handle, args as Array<String>)
+import kotlinx.coroutines.runBlocking
+
+public actual suspend fun Mpv.command(vararg args: String) {
+    runBlocking {
+        LibMpv.command(handle, args as Array<String>)
+    }
 }
 
 public actual fun Mpv.commandNode(vararg args: MpvNode): MpvNode {

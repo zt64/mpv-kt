@@ -13,7 +13,6 @@ kotlin {
     explicitApi()
 
     jvm()
-
     apple()
 
     sourceSets {

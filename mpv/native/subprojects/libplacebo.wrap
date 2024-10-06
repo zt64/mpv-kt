@@ -1,0 +1,8 @@
+[wrap-git]
+url = https://github.com/haasn/libplacebo
+revision = master
+depth = 1
+clone-recursive = true
+
+[provide]
+libplacebo = libplacebo_dep

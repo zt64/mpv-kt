@@ -1,13 +1,20 @@
 package dev.zt64.mpvkt
 
-public expect class MpvHandle
-
 /**
  * MPV client API wrapper
  *
  */
-public expect class Mpv public constructor(handle: MpvHandle = createHandle()) : AutoCloseable {
+public expect class Mpv() : AutoCloseable {
+    /**
+     * The unique client name of this handle
+     */
     public val clientName: String
+
+    /**
+     * The unique client id of this handle
+     *
+     * Never zero or negative
+     */
     public val clientId: Long
 
     /**
@@ -72,7 +79,7 @@ public expect class Mpv public constructor(handle: MpvHandle = createHandle()) :
      * @param name
      * @param priority
      */
-    public fun hookAdd(
+    public fun addHook(
         reply: Long,
         name: String,
         priority: Int,
@@ -107,6 +114,11 @@ public expect class Mpv public constructor(handle: MpvHandle = createHandle()) :
      */
     public fun getTimeUs(): Long
 
+    /**
+     * Close this instance
+     */
+    public override fun close()
+
     public companion object {
         /**
          * Get the mpv client API version
@@ -122,7 +134,5 @@ public expect class Mpv public constructor(handle: MpvHandle = createHandle()) :
          * @return The error string
          */
         public fun errorString(error: Int): String
-
-        public fun createHandle(): MpvHandle
     }
 }

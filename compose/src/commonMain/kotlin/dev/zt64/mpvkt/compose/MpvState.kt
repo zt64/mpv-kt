@@ -6,10 +6,12 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import dev.zt64.mpvkt.Mpv
 import dev.zt64.mpvkt.MpvHandle
 
+@Composable
 public fun rememberMpvState(url: String): MpvState {
     return rememberSaveable(saver = MpvState.Saver) { MpvState() }
 }
 
+@Composable
 public fun rememberMpvState(): MpvState {
     return rememberSaveable(saver = MpvState.Saver) { MpvState() }
 }

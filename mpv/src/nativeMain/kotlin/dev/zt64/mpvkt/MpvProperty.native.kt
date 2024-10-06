@@ -3,47 +3,55 @@ package dev.zt64.mpvkt
 import kotlinx.cinterop.*
 import mpv.*
 
+private inline fun <reified T : CVariable> MemScope.getPropertyCommon(
+    handle: MpvHandle,
+    name: String,
+    format: UInt
+): T = alloc<T> {
+    mpv_get_property(handle, name, format, ptr).checkError()
+}
+
 public actual fun Mpv.getPropertyString(name: String): String? {
-    return mpv_get_property_string(handle, name)!!.toKString()
+    return mpv_get_property_string(handle, name)?.toKString()
 }
 
-public actual fun Mpv.getPropertyFlag(name: String): Boolean? {
-    return memScoped {
-        val result = alloc<IntVar>()
-        mpv_get_property(handle, name, MPV_FORMAT_FLAG, result.ptr).checkError()
-        result.value == 1
+public actual fun Mpv.getPropertyFlag(name: String): Boolean? = memScoped {
+    getPropertyCommon<IntVar>(handle, name, MPV_FORMAT_FLAG).value == 1
+}
+
+public actual fun Mpv.getPropertyLong(name: String): Long? = memScoped {
+    getPropertyCommon<LongVar>(handle, name, MPV_FORMAT_INT64).value
+}
+
+public actual fun Mpv.getPropertyDouble(name: String): Double? = memScoped {
+    getPropertyCommon<DoubleVar>(handle, name, MPV_FORMAT_DOUBLE).value
+}
+
+public actual fun Mpv.getPropertyNode(name: String): MpvNode? = memScoped {
+    getPropertyCommon<MpvNode>(handle, name, MPV_FORMAT_NODE)
+}
+
+public actual fun Mpv.getPropertyArray(name: String): List<MpvNode>? = memScoped {
+    val result = getPropertyCommon<mpv_node_list>(handle, name, MPV_FORMAT_NODE_ARRAY)
+
+    buildList {
+        for (i in 0 until result.num) {
+            add(result.values!![i])
+        }
     }
 }
 
-public actual fun Mpv.getPropertyLong(name: String): Long? {
-    return memScoped {
-        val result = alloc<LongVar>()
-        mpv_get_property(handle, name, MPV_FORMAT_INT64, result.ptr).checkError()
-        result.value
-    }
+public actual fun Mpv.getPropertyMap(name: String): Map<String, MpvNode>? = memScoped {
+    val result = getPropertyCommon<mpv_node_list>(handle, name, MPV_FORMAT_NODE_MAP)
+
+    TODO()
 }
-
-public actual fun Mpv.getPropertyDouble(name: String): Double? {
-    return memScoped {
-        val result = alloc<DoubleVar>()
-        mpv_get_property(handle, name, MPV_FORMAT_DOUBLE, result.ptr).checkError()
-        result.value
-    }
-}
-
-public actual fun Mpv.getPropertyNode(name: String): MpvNode? {
-    return memScoped {
-        val result = alloc<MpvNode>()
-        mpv_get_property(handle, name, MPV_FORMAT_NODE, result.ptr).checkError()
-        result
-    }
-}
-
-public actual fun Mpv.getPropertyNodeArray(name: String): List<MpvNode>? = TODO()
-
-public actual fun Mpv.getPropertyNodeMap(name: String): Map<String, MpvNode>? = TODO()
 
 public actual fun Mpv.getPropertyByteArray(name: String): ByteArray? = TODO()
+
+public actual fun Mpv.setOption(name: String, value: String) {
+    mpv_set_option_string(handle, name, value).checkError()
+}
 
 public actual fun Mpv.setProperty(name: String, value: String) {
     mpv_set_property_string(handle, name, value).checkError()
@@ -72,8 +80,6 @@ public actual fun Mpv.setProperty(name: String, value: Double) {
         mpv_set_property(handle, name, MPV_FORMAT_DOUBLE, data.ptr).checkError()
     }
 }
-
-public actual fun Mpv.setProperty(name: String, value: MpvNode): Unit = TODO()
 
 public actual fun Mpv.setProperty(name: String, value: List<MpvNode>): Unit = TODO()
 

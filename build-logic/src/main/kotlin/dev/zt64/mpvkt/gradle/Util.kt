@@ -28,6 +28,11 @@ fun KotlinMultiplatformExtension.native(configure: KotlinNativeTarget.() -> Unit
     targets.forEach(configure)
 }
 
+/**
+ * Only configure apple targets if on macOS, otherwise don't
+ *
+ * @param configure
+ */
 fun KotlinMultiplatformExtension.apple(configure: KotlinNativeTarget.() -> Unit = {}) {
     val isMacOs = System.getProperty("os.name").lowercase(Locale.getDefault()).contains("mac")
 

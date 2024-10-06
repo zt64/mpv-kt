@@ -10,6 +10,7 @@ import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 class KmpLibPlugin : Plugin<Project> {
     override fun apply(target: Project) {
         setupKmp(target)
+        setupPublishing(target)
     }
 
     @OptIn(ExperimentalKotlinGradlePluginApi::class)
@@ -23,5 +24,8 @@ class KmpLibPlugin : Plugin<Project> {
                 freeCompilerArgs.addAll("-Xexpect-actual-classes")
             }
         }
+    }
+
+    private fun setupPublishing(target: Project) {
     }
 }

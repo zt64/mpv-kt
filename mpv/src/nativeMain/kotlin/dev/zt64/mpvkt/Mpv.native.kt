@@ -4,11 +4,11 @@ import cnames.structs.mpv_handle
 import kotlinx.cinterop.*
 import mpv.*
 
-public actual typealias MpvHandle = mpv_handle
+internal typealias MpvHandle = CPointer<mpv_handle>
 
 public actual class Mpv public actual constructor() : AutoCloseable {
     @PublishedApi
-    internal val handle: CPointer<mpv_handle> = try {
+    internal val handle: MpvHandle = try {
         mpv_create()!!
     } catch (e: Throwable) {
         error("Failed to create mpv handle: ${e.message}")
@@ -32,7 +32,8 @@ public actual class Mpv public actual constructor() : AutoCloseable {
     }
 
     public actual fun waitEvent(timeout: Long): MpvEvent {
-        return mpv_wait_event(handle, timeout.toDouble())!!.pointed
+        mpv_wait_event(handle, timeout.toDouble())!!.pointed
+        TODO()
     }
 
     public actual fun wakeup(): Unit = mpv_wakeup(handle)
@@ -51,7 +52,7 @@ public actual class Mpv public actual constructor() : AutoCloseable {
 
     public actual fun waitAsyncRequests(): Unit = mpv_wait_async_requests(handle)
 
-    public actual fun hookAdd(
+    public actual fun addHook(
         reply: Long,
         name: String,
         priority: Int,
@@ -79,12 +80,6 @@ public actual class Mpv public actual constructor() : AutoCloseable {
 
         public actual fun errorString(error: Int): String {
             return mpv_error_string(error)?.toKString() ?: "Unknown error"
-        }
-
-        public actual fun createHandle(): MpvHandle = try {
-            mpv_create()!!
-        } catch (e: Throwable) {
-            error("Failed to create mpv handle: ${e.message}")
         }
     }
 }

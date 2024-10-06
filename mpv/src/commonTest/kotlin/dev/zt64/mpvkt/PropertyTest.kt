@@ -1,41 +1,15 @@
 package dev.zt64.mpvkt
 
+import kotlinx.coroutines.delay
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFails
+
+const val SAMPLE_URL = "https://www.youtube.com/watch?v=6JYIGclVQdw"
 
 class PropertyTest {
-    private val mpv = Mpv()
-
     @Test
-    fun test() {
-        // val mpv = Mpv()
-        //
-        // mpv.init()
-        // mpv.requestLogMessages("v")
-        //
-        // mpv.setProperty("terminal", true)
-        // mpv.setProperty("msg-level", "all=v")
-        //
-        // mpv.setWakeupCallback {
-        //     println("Wakeup")
-        // }
-        //
-        // mpv.command("loadfile", URL)
-        //
-        // while (true) {
-        //     val event = mpv.waitEvent(1000)
-        //
-        //     // handle close event
-        //     if (event.id == 1) break
-        // }
-        //
-        // mpv.close()
-    }
-
-    @Test
-    fun testProperty() {
-        val mpv = Mpv()
-
+    fun testProperty() = runMpvTest { mpv ->
         // Necessary for properties to work
         mpv.init()
 
@@ -54,25 +28,37 @@ class PropertyTest {
         // Test double property
         mpv.setProperty("speed", 1.5)
         assertEquals(1.5, mpv.getProperty("speed"))
-
-        mpv.close()
     }
 
     @Test
-    fun testNodeMap() {
-        val mpv = Mpv()
+    fun testNodeMap() = runMpvTest { mpv ->
+        mpv.init()
 
-        val node = mpv.getPropertyNode("audio-params")!!
+        mpv.setOption("pause", "yes")
+        mpv.command("loadfile", "/home/nick/Videos/8aed9a24726a48d2beb4391eef7d9957.mp4")
 
-        val map = mapOf<String, MpvNode>()
+        delay(1000)
 
-        mpv.close()
+        val node = mpv.getPropertyMap("metadata")!!
+
+        println(node.entries.joinToString())
     }
 
     @Test
-    fun testNodeArray() {
-        val mpv = Mpv()
+    fun testNodeArray() = runMpvTest { mpv ->
+        mpv.init()
 
-        val node = mpv.getPropertyNodeArray("track-list")!!
+        val node = mpv.getPropertyArray("property-list")!!
+
+        println(node.joinToString())
+    }
+
+    @Test
+    fun testException() = runMpvTest { mpv ->
+        mpv.init()
+
+        assertFails {
+            mpv.getPropertyString("")
+        }
     }
 }

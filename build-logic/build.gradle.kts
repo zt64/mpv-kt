@@ -2,8 +2,16 @@ plugins {
     `kotlin-dsl`
 }
 
+fun Provider<PluginDependency>.mapVersion(): Provider<String> {
+    return map { "${it.pluginId}:${it.pluginId}.gradle.plugin:${it.version}" }
+}
+
 fun DependencyHandler.compileOnly(dependency: Provider<PluginDependency>) {
-    compileOnly(dependency.map { "${it.pluginId}:${it.pluginId}.gradle.plugin:${it.version}" })
+    compileOnly(dependency.mapVersion())
+}
+
+fun DependencyHandler.implementation(dependency: Provider<PluginDependency>) {
+    implementation(dependency.mapVersion())
 }
 
 dependencies {

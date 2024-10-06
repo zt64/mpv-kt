@@ -7,7 +7,6 @@ import mpv.*
 
 public typealias MpvRenderContextHandle = CPointer<mpv_render_context>
 
-@OptIn(ExperimentalStdlibApi::class)
 public actual class MpvRenderContext(private val ctx: MpvRenderContextHandle) : AutoCloseable {
     public actual fun getInfo(param: MpvRenderParam) {
         mpv_render_context_get_info(ctx, param.readValue())

@@ -24,6 +24,4 @@ public object MpvError {
     public const val GENERIC: Int = -20
 }
 
-public class MpvException(code: Int) : Exception() {
-    override val message: String = Mpv.errorString(code)
-}
+public class MpvException(message: String) : Exception(message)

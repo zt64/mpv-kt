@@ -31,7 +31,8 @@ kotlin {
     sourceSets {
         commonMain {
             dependencies {
-                api(projects.mpv)
+                implementation(projects.mpv)
+
                 implementation(projects.compose)
                 implementation(compose.material3)
                 implementation(compose.materialIconsExtended)
@@ -58,7 +59,7 @@ android {
     namespace = "dev.zt64.sample"
     compileSdk = 34
 
-    ndkVersion = "26.2.11394342"
+    ndkVersion = "28.0.12433566"
 
     defaultConfig {
         targetSdk = 34

@@ -5,7 +5,7 @@ import mpv.*
 import kotlin.random.Random
 import kotlin.random.nextULong
 
-public actual fun Mpv.command(vararg args: String) {
+public actual suspend fun Mpv.command(vararg args: String) {
     memScoped {
         mpv_command(handle, args.asList().toCStringArray(memScope))
     }.checkError()

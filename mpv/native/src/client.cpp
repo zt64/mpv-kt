@@ -3,7 +3,9 @@
 #include <clocale>
 
 extern "C" {
-#include <libavcodec/jni.h>
+#if defined(__ANDROID__)
+  #include <libavcodec/jni.h>
+#endif
 }
 
 extern "C" {
@@ -14,8 +16,11 @@ jni_func(int, init, jlong handle);
 jni_func(void, destroy, jlong handle);
 jni_func(void, wakeup, jlong handle);
 
-jni_func(void, requestLogMessages, jlong handle, jint level);
+jni_func(void, requestLogMessages, jlong handle, jstring level);
 jni_func(void, waitAsyncRequests, jlong handle);
+
+jni_func(jobject, requestEvent, jlong handle, jstring event, jint format);
+jni_func(jobject, waitEvent, jlong handle, jlong reply);
 
 jni_func(void, command, jlong handle, jobjectArray jarray);
 jni_func(void, commandNode, jlong handle, jobjectArray jarray);
@@ -43,14 +48,16 @@ static void prepare_environment(JNIEnv *env) {
     setlocale(LC_NUMERIC, "C");
 
     if (!env->GetJavaVM(&g_vm) && g_vm) {
+        #if defined(__ANDROID__)
         av_jni_set_java_vm(g_vm, nullptr);
+        #endif
     }
 
     init_methods_cache(env);
 }
 
 jni_func(jlong, clientApiVersion) {
-    return (jlong) mpv_client_api_version();
+    return static_cast<jlong>(mpv_client_api_version());
 }
 
 jni_func(jlong, create) {
@@ -67,12 +74,41 @@ jni_func(void, destroy, jlong handle) {
     mpv_terminate_destroy(reinterpret_cast<mpv_handle *>(handle));
 }
 
+jni_func(void, wakeup, jlong handle) {
+    mpv_wakeup(reinterpret_cast<mpv_handle *>(handle));
+}
+
+jni_func(void, requestLogMessages, jlong handle, jstring level) {
+    const char *nativeString = env->GetStringUTFChars(level, nullptr);
+
+    mpv_request_log_messages(reinterpret_cast<mpv_handle *>(handle), nativeString);
+
+    env->ReleaseStringUTFChars(level, nativeString);
+}
+
+jni_func(void, waitAsyncRequests, jlong handle) {
+    mpv_wait_async_requests(reinterpret_cast<mpv_handle *>(handle));
+}
+
+// jni_func(jobject, requestEvent, jlong handle, jstring event, jint format) {
+//     const char *nativeString = env->GetStringUTFChars(event, nullptr);
+//
+//     mpv_event *event_ = mpv_request_event(reinterpret_cast<mpv_handle *>(handle), nativeString, format);
+//
+//     env->ReleaseStringUTFChars(event, nativeString);
+//
+//     return event_ ? env->NewObject(mpv_MpvEvent, mpv_MpvEvent_init, (jlong) event_) : nullptr;
+// }
+//
+// jni_func(jobject, waitEvent, jlong handle, jlong reply) {
+//     mpv_event *event_ = mpv_wait_event(reinterpret_cast<mpv_handle *>(handle), reply);
+//
+//     return env->NewObject(mpv_MpvEvent, mpv_MpvEvent_init, (jlong) event_);
+// }
+
 jni_func(void, command, jlong handle, jobjectArray jarray) {
     const char *arguments[128] = {nullptr};
     const int len = env->GetArrayLength(jarray);
-
-//    if (len >= ARRAYLEN(arguments))
-//        die("Cannot run command: too many arguments");
 
     for (int i = 0; i < len; ++i) {
         arguments[i] = env->GetStringUTFChars((jstring) env->GetObjectArrayElement(jarray, i), nullptr);
@@ -99,18 +135,6 @@ jni_func(jobject, clientId, jlong handle) {
     return env->NewObject(java_Long, java_Long_init, (jlong) id);
 }
 
-jni_func(jint, setOptionString, jlong handle, jstring option, jstring value) {
-    const char *opt = env->GetStringUTFChars(option, nullptr);
-    const char *val = env->GetStringUTFChars(value, nullptr);
-
-    const int ret = mpv_set_option_string(reinterpret_cast<mpv_handle *>(handle), opt, val);
-
-    env->ReleaseStringUTFChars(option, opt);
-    env->ReleaseStringUTFChars(value, val);
-
-    return ret;
-}
-
 jni_func(jlong, getTimeNs, jlong handle) {
     return mpv_get_time_ns(reinterpret_cast<mpv_handle *>(handle));
 }
@@ -127,7 +151,7 @@ jni_func(void, hookAdd, jlong handle, jlong reply, jstring name_, jint priority)
     env->ReleaseStringUTFChars(name_, name);
 }
 
-jni_func(void, hookContinue, jlong handle, jlong id) {
+jni_func(void, hookContinue, const jlong handle, const jlong id) {
     mpv_hook_continue(reinterpret_cast<mpv_handle *>(handle), id);
 }
 

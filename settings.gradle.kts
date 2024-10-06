@@ -23,4 +23,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "mpv-kt"
 
-include("mpv", "jni", "compose", "sample")
+include("mpv", "compose", "sample")

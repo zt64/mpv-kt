@@ -5,7 +5,7 @@ public actual fun Mpv.getPropertyString(name: String): String? {
 }
 
 public actual fun Mpv.getPropertyFlag(name: String): Boolean? {
-    return LibMpv.getPropertyBoolean(handle, name)
+    return LibMpv.getPropertyFlag(handle, name)
 }
 
 public actual fun Mpv.getPropertyLong(name: String): Long? {
@@ -17,31 +17,23 @@ public actual fun Mpv.getPropertyDouble(name: String): Double? {
 }
 
 public actual fun Mpv.getPropertyNode(name: String): MpvNode? {
-    // val node = MpvNode()
-    // LibMpv.mpv_get_property(handle, name, MpvFormat.NODE.ordinal, node.pointer).checkError()
-    // return node
-    TODO()
+    return LibMpv.getPropertyNode(handle, name)
 }
 
-public actual fun Mpv.getPropertyNodeArray(name: String): List<MpvNode>? {
-    // val arr = MpvNodeList()
-    // LibMpv.mpv_get_property(handle, name, MpvFormat.NODE_ARRAY.ordinal, arr.pointer).checkError()
-    // return arr.values.asList()
-    TODO()
+public actual fun Mpv.getPropertyArray(name: String): List<MpvNode>? {
+    return LibMpv.getPropertyArray(handle, name)?.asList()
 }
 
-public actual fun Mpv.getPropertyNodeMap(name: String): Map<String, MpvNode>? {
-    // val map = MpvNodeMap()
-    // LibMpv.mpv_get_property(handle, name, MpvFormat.NODE_MAP.ordinal, map.pointer).checkError()
-    // return map.keys.zip(map.values).toMap()
-    TODO()
+public actual fun Mpv.getPropertyMap(name: String): Map<String, MpvNode>? {
+    return LibMpv.getPropertyMap(handle, name)
 }
 
 public actual fun Mpv.getPropertyByteArray(name: String): ByteArray? {
-    // val p = Memory(0)
-    // dev.zt64.mpv.LibMpv.mpv_get_property(handle, name, MpvFormat.BYTE_ARRAY, p)
-
     TODO()
+}
+
+public actual fun Mpv.setOption(name: String, value: String) {
+    LibMpv.setOption(handle, name, value)
 }
 
 public actual fun Mpv.setProperty(name: String, value: String) {
@@ -58,10 +50,6 @@ public actual fun Mpv.setProperty(name: String, value: Long) {
 
 public actual fun Mpv.setProperty(name: String, value: Double) {
     LibMpv.setProperty(handle, name, value)
-}
-
-public actual fun Mpv.setProperty(name: String, value: MpvNode) {
-    // LibMpv.setProperty(handle, name, MpvFormat.NODE.ordinal, value.pointer).checkError()
 }
 
 public actual fun Mpv.setProperty(name: String, value: List<MpvNode>) {

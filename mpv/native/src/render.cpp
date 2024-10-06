@@ -1,5 +1,5 @@
 #include "jni_utils.h"
-#include <mpv/render.h>
+#include "mpv/render.h"
 
 extern "C" {
 jni_func(jlong, renderContextCreate, jlong handle, jobjectArray params);

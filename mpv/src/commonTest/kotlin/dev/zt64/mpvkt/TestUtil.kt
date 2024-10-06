@@ -1,9 +1,21 @@
 package dev.zt64.mpvkt
 
-fun testMpv(block: Mpv.() -> Unit) {
-    val mpv = Mpv()
+import kotlinx.coroutines.runBlocking
 
-    mpv.block()
+/**
+ * Setup MPV for testing and automatically close upon finishing
+ *
+ * @param block
+ */
+inline fun runMpvTest(crossinline block: suspend (mpv: Mpv) -> Unit) {
+    runBlocking {
+        val mpv = Mpv()
 
-    mpv.close()
+        mpv.setOption("terminal", "yes")
+        mpv.setOption("msg-level", "all=v")
+
+        block(mpv)
+
+        mpv.close()
+    }
 }

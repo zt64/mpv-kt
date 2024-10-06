@@ -1,12 +1,18 @@
 package dev.zt64.mpvkt
 
+import kotlin.random.Random
+
+internal fun generateReplyId(): Int {
+    return Random.nextInt()
+}
+
 /**
  * See also: [list-of-input-commands](https://mpv.io/manual/stable/#list-of-input-commands)
  *
  * @param args
  * @return
  */
-public expect fun Mpv.command(vararg args: String)
+public expect suspend fun Mpv.command(vararg args: String)
 
 /**
  * TODO: Add documentation

@@ -9,6 +9,4 @@ public enum class MpvLogLevel(internal val value: Int, private val str: String) 
     VERBOSE(50, "v"),
     DEBUG(60, "debug"),
     TRACE(70, "trace");
-
-    override fun toString(): String = str
 }

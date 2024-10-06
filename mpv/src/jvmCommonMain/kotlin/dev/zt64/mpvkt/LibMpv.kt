@@ -5,7 +5,7 @@ import dev.zt64.mpvkt.render.MpvRenderParam
 
 internal object LibMpv {
     init {
-        NativeLoader.loadLibrary(LibMpv::class.java.classLoader!!, "jni")
+        NativeLoader.loadLibrary("mpv_jni")
     }
 
     @JvmStatic
@@ -91,7 +91,7 @@ internal object LibMpv {
     @JvmStatic
     external fun getPropertyDouble(handle: MpvHandle, property: String): Double?
 
-    @JvmName("setPropertyBoolean")
+    @JvmName("setPropertyFlag")
     external fun setProperty(
         handle: MpvHandle,
         property: String,
@@ -99,7 +99,7 @@ internal object LibMpv {
     )
 
     @JvmStatic
-    external fun getPropertyBoolean(handle: MpvHandle, property: String): Boolean?
+    external fun getPropertyFlag(handle: MpvHandle, property: String): Boolean?
 
     @JvmName("setPropertyString")
     external fun setProperty(
@@ -110,6 +110,22 @@ internal object LibMpv {
 
     @JvmStatic
     external fun getPropertyString(handle: MpvHandle, property: String): String?
+
+    @JvmName("setPropertyNode")
+    external fun setProperty(
+        handle: MpvHandle,
+        property: String,
+        value: MpvNode
+    )
+
+    @JvmStatic
+    external fun getPropertyNode(handle: MpvHandle, property: String): MpvNode?
+
+    @JvmStatic
+    external fun getPropertyArray(handle: MpvHandle, property: String): Array<MpvNode>?
+
+    @JvmStatic
+    external fun getPropertyMap(handle: MpvHandle, property: String): Map<String, MpvNode>?
 
     @JvmStatic
     external fun observeProperty(

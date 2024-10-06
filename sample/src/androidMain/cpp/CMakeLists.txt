@@ -1,5 +1,2 @@
 cmake_minimum_required(VERSION 3.4.1)
 project(guh)
-file(GLOB helloworld_SRC CONFIGURE_DEPENDS "*.h" "*.cpp")
-add_library(guh SHARED ${helloworld_SRC})
-target_link_libraries(guh android)
