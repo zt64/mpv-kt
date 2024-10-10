@@ -8,7 +8,7 @@ import dev.zt64.mpvkt.MpvHandle
 
 @Composable
 public fun rememberMpvState(url: String): MpvState {
-    return rememberSaveable(saver = MpvState.Saver) { MpvState() }
+    return rememberSaveable(saver = MpvState.Saver) { MpvState(url) }
 }
 
 @Composable
@@ -23,6 +23,10 @@ public fun rememberMpvState(): MpvState {
 @Stable
 public class MpvState(private val handle: MpvHandle? = null) {
     private val mpv = if (handle != null) Mpv(handle) else Mpv()
+
+    public constructor(url: String) : this() {
+        TODO()
+    }
 
     public var position: Float by mutableStateOf(0f)
         private set
