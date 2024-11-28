@@ -12,7 +12,7 @@ shadow = "8.1.1"
 compatibility = "0.16.3"
 kover = "0.8.3"
 publish = "0.29.0"
-ktlintPlugin = "12.1.1"
+ktlintPlugin = "12.1.2"
 ktlint = "1.2.1"
 
 [libraries]
