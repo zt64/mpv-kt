@@ -9,7 +9,7 @@ calf = "0.6.1"
 # Maintenance
 dockcross = "0.3.0"
 shadow = "8.1.1"
-compatibility = "0.16.3"
+compatibility = "0.17.0"
 kover = "0.8.3"
 publish = "0.30.0"
 ktlintPlugin = "12.1.2"
