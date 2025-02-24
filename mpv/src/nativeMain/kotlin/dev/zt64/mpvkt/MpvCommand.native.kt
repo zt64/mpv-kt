@@ -2,8 +2,6 @@ package dev.zt64.mpvkt
 
 import kotlinx.cinterop.*
 import mpv.*
-import kotlin.random.Random
-import kotlin.random.nextULong
 
 public actual suspend fun Mpv.command(vararg args: String) {
     memScoped {
@@ -22,7 +20,7 @@ public actual fun Mpv.commandNode(vararg args: MpvNode): MpvNode = memScoped {
 }
 
 public actual suspend fun Mpv.commandAsync(vararg args: String) {
-    val replyCode = Random.nextULong()
+    val replyCode = generateReplyId().toULong()
     memScoped {
         mpv_command_async(
             ctx = handle,
@@ -34,7 +32,7 @@ public actual suspend fun Mpv.commandAsync(vararg args: String) {
 }
 
 public actual suspend fun Mpv.commandNodeAsync(vararg args: MpvNode): MpvNode {
-    val replyCode = Random.nextULong()
+    val replyCode = generateReplyId().toULong()
     memScoped {
         mpv_command_node_async(
             ctx = handle,

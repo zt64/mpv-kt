@@ -8,7 +8,7 @@ project('mpv_jni', ['cpp'],
 #frbidi_subproject = subproject('fribidi', default_options : ['docs=false', 'tests=false'])
 #frbidi_dep = frbidi_subproject.get_variable('libfribidi_dep')
 
-libass_subproject = subproject('libass', default_options : ['c_args=--enable-pic', 'require-system-font-provider=false'])
+libass_subproject = subproject('libass', default_options : ['default_library=static', 'c_args=--enable-pic', 'require-system-font-provider=false'])
 libass_dep = libass_subproject.get_variable('libass_dep')
 
 #libass = declare_dependency(

@@ -4,7 +4,7 @@ package dev.zt64.mpvkt
  * See also: [property-list](https://mpv.io/manual/stable/#property-list)
  *           [options](https://mpv.io/manual/master/#options)
  *
- * @param T The type of the property
+ * @param T The type of the property, must be one of [MpvNode]
  * @param name The name of the property
  * @return The value of the property
  * @see [MpvFormat] for the supported types
@@ -14,7 +14,6 @@ public inline fun <reified T : Any> Mpv.getProperty(name: String): T? = when (T:
     Boolean::class -> getPropertyFlag(name) as T?
     Long::class -> getPropertyLong(name) as T?
     Double::class -> getPropertyDouble(name) as T?
-    MpvNode::class -> getPropertyNode(name) as T?
     List::class -> getPropertyArray(name) as T?
     Map::class -> getPropertyMap(name) as T?
     ByteArray::class -> getPropertyByteArray(name) as T?
@@ -28,8 +27,6 @@ public expect fun Mpv.getPropertyFlag(name: String): Boolean?
 public expect fun Mpv.getPropertyLong(name: String): Long?
 
 public expect fun Mpv.getPropertyDouble(name: String): Double?
-
-public expect fun Mpv.getPropertyNode(name: String): MpvNode?
 
 public expect fun Mpv.getPropertyArray(name: String): List<MpvNode>?
 

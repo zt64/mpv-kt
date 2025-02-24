@@ -16,10 +16,6 @@ public actual fun Mpv.getPropertyDouble(name: String): Double? {
     return LibMpv.getPropertyDouble(handle, name)
 }
 
-public actual fun Mpv.getPropertyNode(name: String): MpvNode? {
-    return LibMpv.getPropertyNode(handle, name)
-}
-
 public actual fun Mpv.getPropertyArray(name: String): List<MpvNode>? {
     return LibMpv.getPropertyArray(handle, name)?.asList()
 }

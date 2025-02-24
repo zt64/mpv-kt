@@ -1,4 +1,4 @@
-#include "mpv/client.h"
+#include <mpv/client.h>
 #include "jni_utils.h"
 
 extern "C" {
@@ -23,6 +23,8 @@ jni_func(void, observeProperty, jlong handle, jstring property, jint format);
 jni_func(void, unobserveProperty, jlong handle, jlong reply);
 
 jni_func(void, delProperty, jlong handle, jstring property);
+
+#undef PROPERTY
 }
 
 jni_func(jint, setOption, jlong handle, jstring option, jstring value) {
@@ -37,7 +39,7 @@ jni_func(jint, setOption, jlong handle, jstring option, jstring value) {
     return ret;
 }
 
-static void common_get_property(JNIEnv *env, jlong handle, jstring property, mpv_format format, void *output) {
+static void common_get_property(JNIEnv *env, const jlong handle, jstring property, mpv_format format, void *output) {
     const char *prop = env->GetStringUTFChars(property, nullptr);
     const int result = mpv_get_property(reinterpret_cast<mpv_handle *>(handle), prop, format, output);
     env->ReleaseStringUTFChars(property, prop);
@@ -45,7 +47,7 @@ static void common_get_property(JNIEnv *env, jlong handle, jstring property, mpv
     handleMpvError(env, result);
 }
 
-static int common_set_property(JNIEnv *env, jlong handle, jstring property, mpv_format format, void *value) {
+static int common_set_property(JNIEnv *env, const jlong handle, jstring property, mpv_format format, void *value) {
     const char *prop = env->GetStringUTFChars(property, nullptr);
     const int result = mpv_set_property(reinterpret_cast<mpv_handle *>(handle), prop, format, value);
     env->ReleaseStringUTFChars(property, prop);
@@ -112,11 +114,11 @@ jni_func(void, setPropertyString, jlong handle, jstring property, jstring jvalue
 jobject nodeToJobject(JNIEnv *env, mpv_node node);
 
 jobjectArray arrayToJvm(JNIEnv *env, const mpv_node value) {
-    mpv_node_list *list = value.u.list;
+    const mpv_node_list *list = value.u.list;
     jobjectArray objArr = env->NewObjectArray(list->num, mpv_MpvNode, nullptr);
 
     for (int i = 0; i < list->num; i++) {
-        mpv_node node = list->values[i];
+        const mpv_node node = list->values[i];
         jobject a = nodeToJobject(env, node);
 
         env->SetObjectArrayElement(objArr, i, a);
@@ -160,7 +162,7 @@ jobject mapToJvm(JNIEnv *env, const mpv_node node) {
     return env->PopLocalFrame(hashMap);
 }
 
-jni_func(jobjectArray, getPropertyArray, jlong handle, jstring property) {
+jni_func(jobjectArray, getPropertyArray, const jlong handle, jstring property) {
     mpv_node value;
     common_get_property(env, handle, property, MPV_FORMAT_NODE, &value);
     return arrayToJvm(env, value);
@@ -199,9 +201,7 @@ jobject nodeToJobject(JNIEnv *env, mpv_node node) {
 
             // Wrap the string in a custom Java object
             jobject obj = env->NewObject(mpv_MpvNodeString, mpv_MpvNodeString_init, str);
-
-            // Clean up the local reference for the string
-            env->ReleaseStringUTFChars(str, node.u.string);
+            env->DeleteLocalRef(str);
             return obj;
         }
         case MPV_FORMAT_FLAG:
@@ -215,7 +215,6 @@ jobject nodeToJobject(JNIEnv *env, mpv_node node) {
         case MPV_FORMAT_NODE_MAP:
             return mapToJvm(env, node);
         case MPV_FORMAT_BYTE_ARRAY: {
-
             const mpv_byte_array *ba = node.u.ba;
 
             const jbyteArray jba = env->NewByteArray(ba->size);

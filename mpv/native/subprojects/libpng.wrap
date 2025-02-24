@@ -1,2 +1,13 @@
-[wrap-redirect]
-filename = freetype-2.13.3/subprojects/libpng.wrap
+[wrap-file]
+directory = libpng-1.6.45
+source_url = https://github.com/glennrp/libpng/archive/v1.6.45.tar.gz
+source_filename = libpng-1.6.45.tar.gz
+source_hash = 7ff6898520645716ddc3d8381d97b6e02937b03da92e6fd0d7cf9d7d2b0da780
+patch_filename = libpng_1.6.45-1_patch.zip
+patch_url = https://wrapdb.mesonbuild.com/v2/libpng_1.6.45-1/get_patch
+patch_hash = 76cdf1fe2ec5428e441c10c140e8cb899cb73e7f390db3931e9861a1c9fa8d77
+source_fallback_url = https://github.com/mesonbuild/wrapdb/releases/download/libpng_1.6.45-1/libpng-1.6.45.tar.gz
+wrapdb_version = 1.6.45-1
+
+[provide]
+libpng = libpng_dep

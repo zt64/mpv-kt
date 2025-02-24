@@ -27,9 +27,7 @@ val archDetectConfiguration by configurations.registering {
 val createJniDir by tasks.registering {
     doLast {
         val jniDir = layout.buildDirectory.dir("jni").get().asFile
-        if (!jniDir.exists()) {
-            jniDir.mkdirs()
-        }
+        if (!jniDir.exists()) jniDir.mkdirs()
     }
 }
 
@@ -41,34 +39,50 @@ enum class NativeLinkMode {
 }
 
 data class BuildTarget(
-    val image: String?,
-    val classifier: String,
+    val platform: Platform,
+    val imageSuffix: String,
+    val cpu: String,
     val mode: NativeLinkMode,
-    val archDetect: Boolean
-)
+    val archDetect: Boolean = false,
+    val endian: String = "little"
+) {
+    val image = "${platform.name.lowercase()}-$imageSuffix"
+    val classifier = "${platform.name.lowercase()}-$cpu"
+}
+
+/**
+ * Platform
+ *
+ * @property system the underlying system, for passing to meson cross compile options
+ */
+enum class Platform(val system: String) {
+    LINUX("linux"),
+    ANDROID("linux"),
+    WINDOWS("windows")
+}
 
 val nativeGroup = "native"
+
 val targets = buildList {
     fun MutableList<BuildTarget>.add(
-        platform: String,
-        image: String,
-        classifier: String,
+        platform: Platform,
+        imageSuffix: String,
+        cpu: String,
         mode: NativeLinkMode = NativeLinkMode.DYNAMIC,
         archDetect: Boolean = false
-    ) = add(BuildTarget("$platform-$image", "$platform-$classifier", mode, archDetect))
+    ) = add(BuildTarget(platform, imageSuffix, cpu, mode, archDetect))
 
-    add(platform = "linux", image = "x64", classifier = "x86_64", archDetect = true)
-    add(platform = "linux", image = "x86", classifier = "x86_32", archDetect = true)
-    add(platform = "linux", image = "armv7", classifier = "armv7", archDetect = true)
-    add(platform = "linux", image = "armv7a", classifier = "armv7a", archDetect = true)
-    add(platform = "linux", image = "arm64", classifier = "aarch64", archDetect = true)
-    add(platform = "linux", image = "riscv32", classifier = "riscv32", archDetect = true)
-    add(platform = "linux", image = "riscv64", classifier = "riscv64", archDetect = true)
-    add(platform = "android", image = "arm", classifier = "arm")
-    add(platform = "android", image = "arm64", classifier = "arm64")
-    add(platform = "android", image = "x86_64", classifier = "x86_64")
-    add(platform = "android", image = "x86", classifier = "x86_32")
-    add(platform = "windows", image = "shared-x64", classifier = "x86_64")
+    add(platform = Platform.LINUX, imageSuffix = "x64", cpu = "x86_64", archDetect = true)
+    add(platform = Platform.LINUX, imageSuffix = "x86", cpu = "x86_32", archDetect = true)
+    add(platform = Platform.LINUX, imageSuffix = "armv7", cpu = "armv7", archDetect = true)
+    add(platform = Platform.LINUX, imageSuffix = "armv7a", cpu = "armv7a", archDetect = true)
+    add(platform = Platform.LINUX, imageSuffix = "arm64", cpu = "aarch64", archDetect = true)
+    // add(platform = Platform.LINUX, imageSuffix = "riscv32", cpu = "riscv32", archDetect = true)
+    // add(platform = Platform.LINUX, imageSuffix = "riscv64", cpu = "riscv64", archDetect = true)
+    add(platform = Platform.ANDROID, imageSuffix = "arm", cpu = "arm")
+    add(platform = Platform.ANDROID, imageSuffix = "arm64", cpu = "arm64")
+    add(platform = Platform.ANDROID, imageSuffix = "x86_64", cpu = "x86_64")
+    add(platform = Platform.WINDOWS, imageSuffix = "shared-x64", cpu = "x86_64")
 }
 
 val compileNativeAll by tasks.registering(DefaultTask::class) {
@@ -79,19 +93,45 @@ val compileNativeAllExceptAndroid by tasks.registering(DefaultTask::class) {
     group = nativeGroup
 }
 
-val buildReleaseBinaries = project.findProperty("mpv-kt.build-release-binaries")
+val buildReleaseBinaries = project
+    .findProperty("mpv-kt.build-release-binaries")
     ?.toString()
     .toBoolean()
 
-fun Project.dockcrossProp(prop: String, classifier: String) =
-    findProperty("dockcross.$prop.$classifier")?.toString()
+fun Project.dockcrossProp(prop: String, classifier: String) = findProperty("dockcross.$prop.$classifier")?.toString()
 
-fun DockcrossRunTask.baseConfigure(linkMode: NativeLinkMode, outputTo: Directory) {
+fun DockcrossRunTask.baseConfigure(linkMode: NativeLinkMode, outputTo: Directory, target: BuildTarget? = null) {
     group = nativeGroup
 
     inputs.dir(project.layout.projectDirectory.dir("native/include"))
     inputs.dir(project.layout.projectDirectory.dir("native/src"))
-    inputs.file(project.layout.projectDirectory.file("native/CMakeLists.txt"))
+    inputs.dir(project.layout.projectDirectory.dir("native/subprojects"))
+    inputs.file(project.layout.projectDirectory.file("native/meson.build"))
+
+    if (target != null) {
+        copy {
+            from("native/native.ini")
+            into(outputTo)
+
+            expand(
+                "system" to target.platform.system,
+                "cpu" to target.cpu,
+                "cpu_family" to target.cpu,
+                "endian" to target.endian,
+                "extra" to if (target.platform == Platform.WINDOWS) {
+                    """
+                        [binaries]
+                        ar = 'x86_64-w64-mingw32.shared-ar'
+                        windres = 'x86_64-w64-mingw32.shared-windres'
+                        dlltool = 'x86_64-w64-mingw32.shared-dlltool'
+                        strip = 'x86_64-w64-mingw32.shared-strip'
+                    """.trimIndent()
+                } else {
+                    " "
+                }
+            )
+        }
+    }
 
     mountSource = project.rootProject.layout.projectDirectory.asFile
 
@@ -100,9 +140,12 @@ fun DockcrossRunTask.baseConfigure(linkMode: NativeLinkMode, outputTo: Directory
     javaHome = javaToolchains.launcherFor(java.toolchain).map { it.metadata.installationPath }
     output = outputTo.dir("native")
 
-    val relativePathToProject =
-        output.get().asFile.toPath().relativize(project.layout.projectDirectory.asFile.toPath())
-            .toString()
+    val relativePathToProject = output
+        .get()
+        .asFile
+        .toPath()
+        .relativize(project.layout.projectDirectory.asFile.toPath())
+        .toString()
 
     script = listOf(
         listOf(
@@ -110,9 +153,8 @@ fun DockcrossRunTask.baseConfigure(linkMode: NativeLinkMode, outputTo: Directory
             "setup",
             "./",
             "$relativePathToProject/native",
-            "--buildtype=${if (buildReleaseBinaries) "release" else "debug"}",
-            "--cross-file=$relativePathToProject/native/native.ini",
-            "-Dfribidi:tests=false"
+            "--buildtype=${if (buildReleaseBinaries) "release" else "debug"}"
+            // "--cross-file=../native.ini"
         ),
         listOf("meson", "compile", "-C", "./")
     )
@@ -132,19 +174,20 @@ for (target in targets) {
     val classifier = target.classifier
     val dockcrossVersion = "20240727-3995c0c"
     val dockcrossImage = project.dockcrossProp(prop = "image", classifier)
-        ?: target.image?.let { "docker.io/dockcross/$it:$dockcrossVersion" }
-        ?: error("No image configured for target: $target")
+        ?: target.image.let { "docker.io/dockcross/$it:$dockcrossVersion" }
 
     val (repo, tag) = dockcrossImage.split(":", limit = 2)
     val linkMode = (project.dockcrossProp(prop = "link-mode", classifier) ?: target.mode.name)
-        .uppercase().let(NativeLinkMode::valueOf)
+        .uppercase()
+        .let(NativeLinkMode::valueOf)
 
     val buildOutputDir = project.layout.buildDirectory.dir("dockcross/$classifier")
-    val taskSuffix = classifier.split("[-]".toRegex())
+    val taskSuffix = classifier
+        .split("[-]".toRegex())
         .joinToString(separator = "") { it.lowercase().replaceFirstChar(Char::uppercase) }
 
-    val compileNative = tasks.register("compileNativeFor$taskSuffix", DockcrossRunTask::class) {
-        baseConfigure(linkMode, buildOutputDir.get())
+    val compileNative = tasks.register("compileNative$taskSuffix", DockcrossRunTask::class) {
+        baseConfigure(linkMode, buildOutputDir.get(), target)
 
         dockcrossRepository = repo
         dockcrossTag = tag
@@ -161,8 +204,7 @@ for (target in targets) {
         }
     }
 
-
-    val packageNative = tasks.register("packageNativeFor$taskSuffix", Jar::class) {
+    val packageNative = tasks.register("packageNative$taskSuffix", Jar::class) {
         baseConfigure(compileNative, buildOutputDir.get())
 
         archiveClassifier = classifier
@@ -247,7 +289,7 @@ kotlin {
 
         jvmMain {
             dependencies {
-                files(tasks.named("packageNativeForLinuxX86_64").get()).also {
+                files(tasks.named("packageNativeLinuxX86_64").get()).also {
                     implementation(it)
                 }
             }
@@ -283,19 +325,7 @@ android {
 
     defaultConfig {
         minSdk = 21
-
-        // externalNativeBuild {
-        //     ndkBuild {
-        //         targets("Foo")
-        //     }
-        // }
     }
-
-    // externalNativeBuild {
-    //     cmake {
-    //         path = file("src/androidMain/cpp/CMakeLists.txt")
-    //     }
-    // }
 }
 
 mavenPublishing {
@@ -323,7 +353,6 @@ mavenPublishing {
         developers {
             developer {
                 id = "zt64"
-                name = "zeet"
                 url = "https://zt64.dev"
             }
         }

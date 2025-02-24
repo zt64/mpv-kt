@@ -11,7 +11,6 @@ setup() {
     "--buildtype=release"
     "--strip"
     "--force-fallback-for=ffmpeg,mpv"
-    "--native-file=native.ini"
   )
 
   if [[ ! ($OSTYPE == "linux-gnu" && $target == "linux-x86_64") ]]; then

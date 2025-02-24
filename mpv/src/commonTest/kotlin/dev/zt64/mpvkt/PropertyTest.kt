@@ -5,8 +5,6 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFails
 
-const val SAMPLE_URL = "https://www.youtube.com/watch?v=6JYIGclVQdw"
-
 class PropertyTest {
     @Test
     fun testProperty() = runMpvTest { mpv ->
@@ -41,7 +39,7 @@ class PropertyTest {
 
         val node = mpv.getPropertyMap("metadata")!!
 
-        println(node.entries.joinToString())
+        println(node)
     }
 
     @Test
