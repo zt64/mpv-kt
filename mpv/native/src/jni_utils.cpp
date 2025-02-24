@@ -42,50 +42,50 @@ void init_methods_cache(JNIEnv *env) {
 
     mpv_MPVException = FIND_CLASS("dev/zt64/mpvkt/MpvException");
 
-    mpv_MpvNode = FIND_CLASS("dev/zt64/mpvkt/MpvNodeValue");
-    mpv_MpvNodeString = FIND_CLASS("dev/zt64/mpvkt/MpvNodeString");
+    mpv_MpvNode = FIND_CLASS("dev/zt64/mpvkt/MpvNode");
+    mpv_MpvNodeString = FIND_CLASS("dev/zt64/mpvkt/MpvNode$StringNode");
     mpv_MpvNodeString_init = env->GetMethodID(
             mpv_MpvNodeString,
             "<init>",
             "(Ljava/lang/String;)V"
     );
 
-    mpv_MpvNodeFlag = FIND_CLASS("dev/zt64/mpvkt/MpvNodeFlag");
+    mpv_MpvNodeFlag = FIND_CLASS("dev/zt64/mpvkt/MpvNode$FlagNode");
     mpv_MpvNodeFlag_init = env->GetMethodID(
             mpv_MpvNodeFlag,
             "<init>",
             "(Z)V"
     );
 
-    mpv_MpvNodeLong = FIND_CLASS("dev/zt64/mpvkt/MpvNodeLong");
+    mpv_MpvNodeLong = FIND_CLASS("dev/zt64/mpvkt/MpvNode$LongNode");
     mpv_MpvNodeLong_init = env->GetMethodID(
             mpv_MpvNodeLong,
             "<init>",
             "(J)V"
     );
 
-    mpv_MpvNodeDouble = FIND_CLASS("dev/zt64/mpvkt/MpvNodeDouble");
+    mpv_MpvNodeDouble = FIND_CLASS("dev/zt64/mpvkt/MpvNode$DoubleNode");
     mpv_MpvNodeDouble_init = env->GetMethodID(
             mpv_MpvNodeDouble,
             "<init>",
             "(D)V"
     );
 
-    mpv_MpvNodeArray = FIND_CLASS("dev/zt64/mpvkt/MpvNodeArray");
+    mpv_MpvNodeArray = FIND_CLASS("dev/zt64/mpvkt/MpvNode$ArrayNode");
     mpv_MpvNodeArray_init = env->GetMethodID(
             mpv_MpvNodeArray,
             "<init>",
             "(Ljava/util/List;)V"
     );
 
-    mpv_MpvNodeMap = FIND_CLASS("dev/zt64/mpvkt/MpvNodeMap");
+    mpv_MpvNodeMap = FIND_CLASS("dev/zt64/mpvkt/MpvNode$MapNode");
     mpv_MpvNodeMap_init = env->GetMethodID(
             mpv_MpvNodeMap,
             "<init>",
             "(Ljava/util/Map;)V"
     );
 
-    mpv_MpvNodeByte = FIND_CLASS("dev/zt64/mpvkt/MpvNodeByte");
+    mpv_MpvNodeByte = FIND_CLASS("dev/zt64/mpvkt/MpvNode$ByteNode");
     mpv_MpvNodeByte_init = env->GetMethodID(
             mpv_MpvNodeByte,
             "<init>",

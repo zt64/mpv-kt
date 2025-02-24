@@ -66,11 +66,11 @@ jni_func(jlong, create) {
     return reinterpret_cast<jlong>(mpv_create());
 }
 
-jni_func(int, init, jlong handle) {
+jni_func(int, init, const jlong handle) {
     return mpv_initialize(reinterpret_cast<mpv_handle *>(handle));
 }
 
-jni_func(void, destroy, jlong handle) {
+jni_func(void, destroy, const jlong handle) {
     mpv_terminate_destroy(reinterpret_cast<mpv_handle *>(handle));
 }
 

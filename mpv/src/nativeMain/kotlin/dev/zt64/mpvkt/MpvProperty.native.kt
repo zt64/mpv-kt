@@ -3,11 +3,7 @@ package dev.zt64.mpvkt
 import kotlinx.cinterop.*
 import mpv.*
 
-private inline fun <reified T : CVariable> MemScope.getPropertyCommon(
-    handle: MpvHandle,
-    name: String,
-    format: UInt
-): T = alloc<T> {
+private inline fun <reified T : CVariable> MemScope.getPropertyCommon(handle: MpvHandle, name: String, format: UInt): T = alloc<T> {
     mpv_get_property(handle, name, format, ptr).checkError()
 }
 
@@ -27,22 +23,18 @@ public actual fun Mpv.getPropertyDouble(name: String): Double? = memScoped {
     getPropertyCommon<DoubleVar>(handle, name, MPV_FORMAT_DOUBLE).value
 }
 
-public actual fun Mpv.getPropertyNode(name: String): MpvNode? = memScoped {
-    getPropertyCommon<MpvNode>(handle, name, MPV_FORMAT_NODE)
-}
-
 public actual fun Mpv.getPropertyArray(name: String): List<MpvNode>? = memScoped {
     val result = getPropertyCommon<mpv_node_list>(handle, name, MPV_FORMAT_NODE_ARRAY)
 
     buildList {
         for (i in 0 until result.num) {
-            add(result.values!![i])
+            add(result.values!![i].toKotlin())
         }
     }
 }
 
 public actual fun Mpv.getPropertyMap(name: String): Map<String, MpvNode>? = memScoped {
-    val result = getPropertyCommon<mpv_node_list>(handle, name, MPV_FORMAT_NODE_MAP)
+    getPropertyCommon<mpv_node_list>(handle, name, MPV_FORMAT_NODE_MAP)
 
     TODO()
 }
