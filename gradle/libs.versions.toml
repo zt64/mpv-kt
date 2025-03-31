@@ -4,7 +4,7 @@ android = "8.7.3"
 coroutines = "1.10.1"
 compose = "1.7.3"
 appcompat = "1.7.0"
-calf = "0.6.1"
+calf = "0.7.1"
 
 # Maintenance
 dockcross = "0.3.0"
