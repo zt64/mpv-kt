@@ -11,7 +11,7 @@ dockcross = "0.3.0"
 shadow = "8.1.1"
 compatibility = "0.17.0"
 kover = "0.9.1"
-publish = "0.30.0"
+publish = "0.31.0"
 ktlintPlugin = "12.2.0"
 ktlint = "1.2.1"
 
