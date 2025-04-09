@@ -4,14 +4,8 @@ import kotlin.test.Test
 
 class CbTest {
     @Test
-    fun testCb() {
-        // val ctx = Mpv()
-        //
-        // ctx.requestLogMessages(MpvLogLevel.VERBOSE)
-        //
-        // ctx.init()
-        //
-        // ctx.streamCbAddRo("myprotocol") { uri ->
+    fun testCb() = runMpvTest { mpv ->
+        // mpv.streamCbAddRo("myprotocol") { uri ->
         //     val path = Path(uri)
         //     MpvStreamCbInfo(
         //         cookie = SystemFileSystem.source(path).buffered(),
@@ -30,8 +24,8 @@ class CbTest {
         //     )
         // }
         //
-        // ctx.command("loadfile", "myprotocol://fake")
-        //
-        // ctx.close()
+        // mpv.command("loadfile", "myprotocol://fake")
+
+        mpv.close()
     }
 }

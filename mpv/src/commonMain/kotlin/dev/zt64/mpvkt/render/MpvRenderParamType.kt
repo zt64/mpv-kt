@@ -1,8 +1,6 @@
 package dev.zt64.mpvkt.render
 
 public enum class MpvRenderParamType {
-    INVALID,
-    API_TYPE,
     OPENGL_INIT_PARAMS,
     OPENGL_FBO,
     FLIP_Y,
@@ -24,7 +22,7 @@ public enum class MpvRenderParamType {
     SW_POINTER
 }
 
-public object MpvRenderApiType {
-    public const val MPV_RENDER_API_TYPE_OPENGL: String = "opengl"
-    public const val MPV_RENDER_API_TYPE_SW: String = "sw"
+public enum class MpvRenderApiType {
+    OPENGL,
+    SW
 }

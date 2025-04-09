@@ -3,89 +3,135 @@
 
 #include <cstdlib>
 
-extern "C" {
-jni_func(jlong, renderContextCreate, jlong handle, jobjectArray params);
+jni_func(jlong, renderContextCreate, const jlong handle, const jobject apiType, const jobjectArray params) {
+    const jsize len = env->GetArrayLength(params);
+    auto* cparams = new mpv_render_param[len + 2]; // +2 for MPV_RENDER_PARAM_API_TYPE and MPV_RENDER_PARAM_INVALID
 
-jni_func(int, renderContextSetParameter, jlong ctx, jlong param);
+    const jint ordinal = env->CallIntMethod(apiType, mpv_MpvRenderApiType_getOrdinal);
+    const char* apiTypeName = nullptr;
 
-jni_func(int, renderContextGetInfo, jlong ctx, jlong param);
-
-jni_func(void, renderContextSetUpdateCallback, jlong ctx, jobject callback);
-
-jni_func(uint64_t, renderContextUpdate, jlong ctx);
-
-jni_func(int, renderContextRender, jlong ctx, jlongArray params);
-
-jni_func(jbyteArray, renderContextRenderSw, jlong ctx, jlongArray params);
-
-jni_func(void, renderContextReportSwap, jlong ctx);
-
-jni_func(void, renderContextFree, jlong ctx);
-
-#ifdef __android__
-jni_func(void, attachSurface, jlong handle, jobject surface_);
-jni_func(void, detachSurface, jlong handle);
-#endif
-}
-
-jni_func(jlong, renderContextCreate, jlong handle, jobjectArray params) {
-    mpv_render_param* cparams = nullptr;
-
-    if (params) {
-        const jsize len = env->GetArrayLength(params);
-        cparams = new mpv_render_param[len];
-
-        for (int i = 0; i < len; i++) {
-            jobject obj = env->GetObjectArrayElement(params, i);
-            jclass cls = env->GetObjectClass(obj);
-            jfieldID fid = env->GetFieldID(cls, "type", "I");
-            jint type = env->GetIntField(obj, fid);
-
-            fid = env->GetFieldID(cls, "data", "J");
-            jlong data = env->GetLongField(obj, fid);
-
-            cparams[i].type = static_cast<mpv_render_param_type>(type);
-            cparams[i].data = reinterpret_cast<void *>(data);
-        }
+    switch (ordinal) {
+        case 0:
+            apiTypeName = "opengl";
+            break;
+        case 1:
+            apiTypeName = "sw";
+            break;
+        default: break;
     }
+
+    cparams[0] = {
+        MPV_RENDER_PARAM_API_TYPE,
+        const_cast<char *>(apiTypeName),
+    };
+
+    for (int i = 0; i < len; i++) {
+        jobject obj = env->GetObjectArrayElement(params, i);
+        jclass cls = env->GetObjectClass(obj);
+
+        jfieldID fid = env->GetFieldID(cls, "type", "I");
+        jint type = env->GetIntField(obj, fid);
+
+        fid = env->GetFieldID(cls, "data", "J");
+        const jlong data = env->GetLongField(obj, fid);
+
+        cparams[i + 1].type = static_cast<mpv_render_param_type>(type);
+        cparams[i + 1].data = reinterpret_cast<void *>(data);
+
+        env->DeleteLocalRef(obj);
+        env->DeleteLocalRef(cls);
+    }
+
+    cparams[len + 1] = {
+        MPV_RENDER_PARAM_INVALID,
+        nullptr
+    };
 
     mpv_render_context* res;
 
-    mpv_render_context_create(&res, reinterpret_cast<mpv_handle *>(handle), cparams);
+    const int result = mpv_render_context_create(&res, reinterpret_cast<mpv_handle *>(handle), cparams);
+    handleMpvError(env, result);
+
+    delete[] cparams;
 
     return reinterpret_cast<jlong>(res);
 }
 
-jni_func(int, renderContextSetParameter, jlong ctx, jlong param) {
+jni_func(int, renderContextSetParameter, const jlong ctx, jlong param) {
     return 0;
 }
 
-jni_func(int, renderContextGetInfo, jlong ctx, jlong param) {
-    constexpr auto param_ = mpv_render_param{
-        .type = MPV_RENDER_PARAM_INVALID,
+jni_func(jobject, renderContextGetInfo, const jlong ctx, const jint param) {
+    printf("Param: %d\n", param);
+    const auto param_ = mpv_render_param{
+        .type = static_cast<mpv_render_param_type>(param),
         .data = nullptr
     };
-    mpv_render_context_get_info(reinterpret_cast<mpv_render_context *>(ctx), param_);
-    return 0;
+
+    const int result = mpv_render_context_get_info(reinterpret_cast<mpv_render_context *>(ctx), param_);
+    handleMpvError(env, result);
+
+    jobject info = nullptr;
+    switch (param_.type) {
+        case MPV_RENDER_PARAM_API_TYPE:
+        case MPV_RENDER_PARAM_SW_FORMAT:
+            // Data is a string
+            info = env->NewStringUTF(static_cast<const char *>(param_.data));
+            break;
+
+        case MPV_RENDER_PARAM_SW_SIZE:
+        case MPV_RENDER_PARAM_SW_STRIDE:
+            // Data is an integer or array
+            info = env->NewIntArray(2);
+            if (info != nullptr) {
+                env->SetIntArrayRegion(reinterpret_cast<jintArray>(info), 0, 2, static_cast<const jint *>(param_.data));
+            }
+            break;
+
+        case MPV_RENDER_PARAM_BLOCK_FOR_TARGET_TIME:
+        case MPV_RENDER_PARAM_SKIP_RENDERING:
+            // Data is a single integer
+            info = env->NewObject(java_Integer, java_Integer_init, *static_cast<int *>(param_.data));
+            break;
+
+        default:
+            // Unsupported type
+            env->ThrowNew(mpv_MPVException, "Unsupported parameter type");
+            return nullptr;
+    }
+
+    return info;
 }
 
-jni_func(void, renderContextSetUpdateCallback, jlong ctx, jobject callback) {
-    const mpv_render_update_fn fn = [](void* ctx) {
-    };
+static jobject renderUpdateCallback = nullptr;
 
-    mpv_render_context_set_update_callback(reinterpret_cast<mpv_render_context *>(ctx), fn, nullptr);
+static void renderCallback(void* ctx) {
+    auto* env = static_cast<JNIEnv *>(ctx);
+    if (renderUpdateCallback != nullptr) env->CallVoidMethod(renderUpdateCallback, mpv_MpvRenderUpdateCallback_invoke);
 }
 
-jni_func(uint64_t, renderContextUpdate, jlong ctx) {
+jni_func(void, renderContextSetUpdateCallback, const jlong ctx, jobject callback) {
+    if (renderUpdateCallback != nullptr) {
+        env->DeleteGlobalRef(renderUpdateCallback);
+        renderUpdateCallback = nullptr;
+    }
+
+    renderUpdateCallback = env->NewGlobalRef(callback);
+    if (renderUpdateCallback == nullptr) return;
+
+    mpv_render_context_set_update_callback(reinterpret_cast<mpv_render_context *>(ctx), renderCallback, env);
+}
+
+jni_func(uint64_t, renderContextUpdate, const jlong ctx) {
     return mpv_render_context_update(reinterpret_cast<mpv_render_context *>(ctx));
 }
 
-jni_func(int, renderContextRender, jlong ctx, jlongArray params) {
+jni_func(int, renderContextRender, const jlong ctx, jlongArray params) {
     const jsize len = env->GetArrayLength(params);
     auto* cparams = new mpv_render_param[len];
 
     for (int i = 0; i < len; i++) {
-        jlong data = env->GetLongArrayElements(params, nullptr)[i];
+        const jlong data = env->GetLongArrayElements(params, nullptr)[i];
         cparams[i].data = reinterpret_cast<void *>(data);
     }
 
@@ -118,15 +164,15 @@ jni_func(jbyteArray, renderContextRenderSw, const jlong ctx, const jlongArray pa
     };
 
     // Call the render function
-    int result = mpv_render_context_render(reinterpret_cast<mpv_render_context *>(ctx), params2);
-    if (result < 0) {
+    if (const int result = mpv_render_context_render(reinterpret_cast<mpv_render_context *>(ctx), params2);
+        result < 0) {
         free(pixels); // Free allocated memory on failure
         return nullptr;
     }
 
     // Copy the pixel data into a ByteArray to send to the JVM
-    size_t totalSize = pitch * h;
-    jbyteArray byteArray = env->NewByteArray(totalSize);
+    const size_t totalSize = pitch * h;
+    jbyteArray byteArray = env->NewByteArray(static_cast<int>(totalSize));
     if (byteArray == nullptr) {
         free(pixels); // Out of memory error thrown
         return nullptr;

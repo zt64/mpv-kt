@@ -19,8 +19,14 @@ public actual class Mpv public actual constructor() : AutoCloseable {
     public actual val clientId: Long
         get() = mpv_client_id(handle)
 
+    internal actual var isInitialized: Boolean = false
+
     public actual fun init() {
+        if (isInitialized) return
+
         mpv_initialize(handle).checkError()
+
+        isInitialized = true
     }
 
     public actual fun requestLogMessages(level: MpvLogLevel) {
@@ -52,13 +58,8 @@ public actual class Mpv public actual constructor() : AutoCloseable {
 
     public actual fun waitAsyncRequests(): Unit = mpv_wait_async_requests(handle)
 
-    public actual fun addHook(
-        reply: Long,
-        name: String,
-        priority: Int,
-        callback: () -> Unit
-    ) {
-        mpv_hook_add(handle, reply.toULong(), name, priority).checkError()
+    public actual fun addHook(name: String, priority: Int, callback: () -> Unit) {
+        mpv_hook_add(handle, 0u, name, priority).checkError()
     }
 
     public actual fun hookContinue(id: Long) {

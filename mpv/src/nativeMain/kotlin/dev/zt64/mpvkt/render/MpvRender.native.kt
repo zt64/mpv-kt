@@ -5,7 +5,7 @@ import kotlinx.cinterop.*
 import mpv.mpv_render_context_create
 import mpv.mpv_render_param
 
-public actual fun Mpv.renderContextCreate(params: List<MpvRenderParam>): MpvRenderContext {
+public actual fun Mpv.renderContextCreate(apiType: MpvRenderApiType, params: List<MpvRenderParam>): MpvRenderContext {
     val res = nativeHeap.allocPointerTo<cnames.structs.mpv_render_context>()
 
     memScoped {

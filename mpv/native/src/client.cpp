@@ -8,49 +8,15 @@ extern "C" {
 #endif
 }
 
-extern "C" {
-jni_func(jlong, clientApiVersion);
+JavaVM* g_vm;
 
-jni_func(jlong, create);
-jni_func(int, init, jlong handle);
-jni_func(void, destroy, jlong handle);
-jni_func(void, wakeup, jlong handle);
-
-jni_func(void, requestLogMessages, jlong handle, jstring level);
-jni_func(void, waitAsyncRequests, jlong handle);
-
-jni_func(jobject, requestEvent, jlong handle, jstring event, jint format);
-jni_func(jobject, waitEvent, jlong handle, jlong reply);
-
-jni_func(void, command, jlong handle, jobjectArray jarray);
-jni_func(void, commandNode, jlong handle, jobjectArray jarray);
-jni_func(void, commandRet, jlong handle, jobjectArray jarray);
-jni_func(void, commandString, jlong handle, jobjectArray jarray);
-jni_func(void, commandAsync, jlong handle, jobjectArray jarray);
-jni_func(void, commandNodeAsync, jlong handle, jobjectArray jarray);
-jni_func(void, abortAsyncCommand, jlong handle, jlong id);
-
-jni_func(jstring, clientName, jlong handle);
-jni_func(jobject, clientId, jlong handle);
-
-jni_func(jlong, getTimeNs, jlong handle);
-jni_func(jlong, getTimeUs, jlong handle);
-
-jni_func(void, hookAdd, jlong handle, jlong reply, jstring name_, jint priority);
-jni_func(void, hookContinue, jlong handle, jlong id);
-
-jni_func(jstring, getErrorString, jint error);
-}
-
-JavaVM *g_vm;
-
-static void prepare_environment(JNIEnv *env) {
+static void prepare_environment(JNIEnv* env) {
     setlocale(LC_NUMERIC, "C");
 
     if (!env->GetJavaVM(&g_vm) && g_vm) {
-        #if defined(__ANDROID__)
+#if defined(__ANDROID__)
         av_jni_set_java_vm(g_vm, nullptr);
-        #endif
+#endif
     }
 
     init_methods_cache(env);
@@ -74,19 +40,19 @@ jni_func(void, destroy, const jlong handle) {
     mpv_terminate_destroy(reinterpret_cast<mpv_handle *>(handle));
 }
 
-jni_func(void, wakeup, jlong handle) {
+jni_func(void, wakeup, const jlong handle) {
     mpv_wakeup(reinterpret_cast<mpv_handle *>(handle));
 }
 
-jni_func(void, requestLogMessages, jlong handle, jstring level) {
-    const char *nativeString = env->GetStringUTFChars(level, nullptr);
+jni_func(void, requestLogMessages, const jlong handle, jstring level) {
+    const char* nativeString = env->GetStringUTFChars(level, nullptr);
 
     mpv_request_log_messages(reinterpret_cast<mpv_handle *>(handle), nativeString);
 
     env->ReleaseStringUTFChars(level, nativeString);
 }
 
-jni_func(void, waitAsyncRequests, jlong handle) {
+jni_func(void, waitAsyncRequests, const jlong handle) {
     mpv_wait_async_requests(reinterpret_cast<mpv_handle *>(handle));
 }
 
@@ -106,45 +72,48 @@ jni_func(void, waitAsyncRequests, jlong handle) {
 //     return env->NewObject(mpv_MpvEvent, mpv_MpvEvent_init, (jlong) event_);
 // }
 
-jni_func(void, command, jlong handle, jobjectArray jarray) {
-    const char *arguments[128] = {nullptr};
+jni_func(void, command, const jlong handle, jobjectArray jarray) {
+    const char* arguments[128] = {nullptr};
     const int len = env->GetArrayLength(jarray);
 
     for (int i = 0; i < len; ++i) {
-        arguments[i] = env->GetStringUTFChars((jstring) env->GetObjectArrayElement(jarray, i), nullptr);
+        arguments[i] = env->GetStringUTFChars(
+            reinterpret_cast<jstring>(env->GetObjectArrayElement(jarray, i)),
+            nullptr
+        );
     }
 
     mpv_command(reinterpret_cast<mpv_handle *>(handle), arguments);
 
     for (int i = 0; i < len; ++i) {
-        env->ReleaseStringUTFChars((jstring) env->GetObjectArrayElement(jarray, i), arguments[i]);
+        env->ReleaseStringUTFChars(reinterpret_cast<jstring>(env->GetObjectArrayElement(jarray, i)), arguments[i]);
     }
 }
 
-jni_func(void, commandString, jlong handle, jobjectArray jarray) {
-    const char *arguments[128] = {nullptr};
+jni_func(void, commandString, const jlong handle, jobjectArray jarray) {
+    const char* arguments[128] = {nullptr};
     const int len = env->GetArrayLength(jarray);
 }
 
-jni_func(jstring, clientName, jlong handle) {
+jni_func(jstring, clientName, const jlong handle) {
     return env->NewStringUTF(mpv_client_name(reinterpret_cast<mpv_handle *>(handle)));
 }
 
-jni_func(jobject, clientId, jlong handle) {
+jni_func(jobject, clientId, const jlong handle) {
     const auto id = mpv_client_id(reinterpret_cast<mpv_handle *>(handle));
-    return env->NewObject(java_Long, java_Long_init, (jlong) id);
+    return env->NewObject(java_Long, java_Long_init, static_cast<jlong>(id));
 }
 
-jni_func(jlong, getTimeNs, jlong handle) {
+jni_func(jlong, getTimeNs, const jlong handle) {
     return mpv_get_time_ns(reinterpret_cast<mpv_handle *>(handle));
 }
 
-jni_func(jlong, getTimeUs, jlong handle) {
+jni_func(jlong, getTimeUs, const jlong handle) {
     return mpv_get_time_us(reinterpret_cast<mpv_handle *>(handle));
 }
 
-jni_func(void, hookAdd, jlong handle, jlong reply, jstring name_, jint priority) {
-    const char *name = env->GetStringUTFChars(name_, nullptr);
+jni_func(void, hookAdd, const jlong handle, const jlong reply, jstring name_, const jint priority) {
+    const char* name = env->GetStringUTFChars(name_, nullptr);
 
     mpv_hook_add(reinterpret_cast<mpv_handle *>(handle), reply, name, priority);
 
@@ -155,6 +124,25 @@ jni_func(void, hookContinue, const jlong handle, const jlong id) {
     mpv_hook_continue(reinterpret_cast<mpv_handle *>(handle), id);
 }
 
-jni_func(jstring, getErrorString, jint error) {
+static jobject globalCallback = nullptr;
+
+static void wakeupCallback(void* ctx) {
+    auto* env = static_cast<JNIEnv *>(ctx);
+    if (globalCallback != nullptr) env->CallVoidMethod(globalCallback, mpv_MpvWakeupCallback_invoke);
+}
+
+jni_func(void, setWakeupCallback, const jlong handle, jobject callback) {
+    if (globalCallback != nullptr) {
+        env->DeleteGlobalRef(globalCallback);
+        globalCallback = nullptr;
+    }
+
+    globalCallback = env->NewGlobalRef(callback);
+    if (globalCallback == nullptr) return;
+
+    mpv_set_wakeup_callback(reinterpret_cast<mpv_handle *>(handle), wakeupCallback, env);
+}
+
+jni_func(jstring, getErrorString, const jint error) {
     return env->NewStringUTF(mpv_error_string(error));
 }

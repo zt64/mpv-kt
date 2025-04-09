@@ -1,32 +1,6 @@
 #include <mpv/client.h>
 #include "jni_utils.h"
 
-extern "C" {
-#define PROPERTY(name, value) \
-    jni_func(value, getProperty##name, jlong, jstring); \
-    jni_func(void, setProperty##name, jlong, jstring, value);
-
-jni_func(jint, setOption, jlong handle, jstring option, jstring value);
-
-jni_func(jobject, getPropertyLong, jlong handle, jstring property);
-jni_func(void, setPropertyLong, jlong handle, jstring property, jlong value);
-jni_func(jobject, getPropertyDouble, jlong handle, jstring property);
-jni_func(void, setPropertyDouble, jlong handle, jstring property, jdouble value);
-jni_func(jobject, getPropertyFlag, jlong handle, jstring property);
-jni_func(void, setPropertyFlag, jlong handle, jstring property, jboolean value);
-jni_func(jstring, getPropertyString, jlong handle, jstring property);
-jni_func(void, setPropertyString, jlong handle, jstring property, jstring jvalue);
-jni_func(jobjectArray, getPropertyArray, jlong handle, jstring property);
-jni_func(jobject, getPropertyMap, jlong handle, jstring property);
-
-jni_func(void, observeProperty, jlong handle, jstring property, jint format);
-jni_func(void, unobserveProperty, jlong handle, jlong reply);
-
-jni_func(void, delProperty, jlong handle, jstring property);
-
-#undef PROPERTY
-}
-
 jni_func(jint, setOption, jlong handle, jstring option, jstring value) {
     const char *opt = env->GetStringUTFChars(option, nullptr);
     const char *val = env->GetStringUTFChars(value, nullptr);

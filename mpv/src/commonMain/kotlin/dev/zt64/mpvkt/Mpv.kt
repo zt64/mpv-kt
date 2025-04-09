@@ -17,6 +17,8 @@ public expect class Mpv() : AutoCloseable {
      */
     public val clientId: Long
 
+    internal var isInitialized: Boolean
+
     /**
      * Set the log level
      *
@@ -65,7 +67,7 @@ public expect class Mpv() : AutoCloseable {
      *
      * @param callback
      */
-    public fun setWakeupCallback(callback: () -> Unit)
+    public fun setWakeupCallback(callback: MpvWakeupCallback)
 
     /**
      * Wait for all pending asynchronous requests to complete
@@ -75,16 +77,10 @@ public expect class Mpv() : AutoCloseable {
     /**
      * TODO: Document
      *
-     * @param reply
      * @param name
      * @param priority
      */
-    public fun addHook(
-        reply: Long,
-        name: String,
-        priority: Int,
-        callback: () -> Unit
-    )
+    public fun addHook(name: String, priority: Int = 0, callback: () -> Unit)
 
     /**
      * TODO: Document

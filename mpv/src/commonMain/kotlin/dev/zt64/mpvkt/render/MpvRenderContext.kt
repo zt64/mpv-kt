@@ -1,11 +1,13 @@
 package dev.zt64.mpvkt.render
 
+import dev.zt64.mpvkt.MpvRenderUpdateCallback
+
 /**
  * Wrapper for the mpv render context
  *
  */
 public expect class MpvRenderContext {
-    public fun getInfo(param: MpvRenderParam)
+    public fun getInfo(param: MpvRenderParam): Any
 
     public fun setParameter(param: MpvRenderParam)
 
@@ -35,7 +37,7 @@ public expect class MpvRenderContext {
      *
      * @param callback The callback
      */
-    public fun setUpdateCallback(callback: () -> Unit)
+    public fun setUpdateCallback(callback: MpvRenderUpdateCallback)
 
     /**
      * Close the render context and free all resources

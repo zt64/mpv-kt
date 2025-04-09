@@ -1,6 +1,6 @@
 package dev.zt64.mpvkt
 
-import dev.zt64.mpvkt.render.MpvRenderContext
+import dev.zt64.mpvkt.render.MpvRenderApiType
 import dev.zt64.mpvkt.render.MpvRenderParam
 
 internal object LibMpv {
@@ -42,18 +42,10 @@ internal object LibMpv {
     external fun command(handle: MpvHandle, cmd: String)
 
     @JvmStatic
-    external fun commandAsync(
-        handle: MpvHandle,
-        requestId: Long,
-        cmd: Array<String>
-    )
+    external fun commandAsync(handle: MpvHandle, requestId: Long, cmd: Array<String>)
 
     @JvmStatic
-    external fun commandAsync(
-        handle: MpvHandle,
-        requestId: Long,
-        node: MpvNode
-    )
+    external fun commandAsync(handle: MpvHandle, requestId: Long, node: MpvNode)
 
     @JvmStatic
     external fun abortAsyncCommand(handle: MpvHandle, requestId: Long)
@@ -65,58 +57,34 @@ internal object LibMpv {
     external fun clientId(handle: Long): Long
 
     @JvmStatic
-    external fun setOption(
-        handle: MpvHandle,
-        name: String,
-        value: String
-    ): Int
+    external fun setOption(handle: MpvHandle, name: String, value: String): Int
 
     @JvmName("setPropertyLong")
-    external fun setProperty(
-        handle: MpvHandle,
-        property: String,
-        value: Long
-    )
+    external fun setProperty(handle: MpvHandle, property: String, value: Long)
 
     @JvmStatic
     external fun getPropertyLong(handle: MpvHandle, property: String): Long?
 
     @JvmName("setPropertyDouble")
-    external fun setProperty(
-        handle: MpvHandle,
-        property: String,
-        value: Double
-    )
+    external fun setProperty(handle: MpvHandle, property: String, value: Double)
 
     @JvmStatic
     external fun getPropertyDouble(handle: MpvHandle, property: String): Double?
 
     @JvmName("setPropertyFlag")
-    external fun setProperty(
-        handle: MpvHandle,
-        property: String,
-        value: Boolean
-    )
+    external fun setProperty(handle: MpvHandle, property: String, value: Boolean)
 
     @JvmStatic
     external fun getPropertyFlag(handle: MpvHandle, property: String): Boolean?
 
     @JvmName("setPropertyString")
-    external fun setProperty(
-        handle: MpvHandle,
-        property: String,
-        value: String
-    )
+    external fun setProperty(handle: MpvHandle, property: String, value: String)
 
     @JvmStatic
     external fun getPropertyString(handle: MpvHandle, property: String): String?
 
     @JvmName("setPropertyNode")
-    external fun setProperty(
-        handle: MpvHandle,
-        property: String,
-        value: MpvNode
-    )
+    external fun setProperty(handle: MpvHandle, property: String, value: MpvNode)
 
     @JvmStatic
     external fun getPropertyNode(handle: MpvHandle, property: String): MpvNode?
@@ -128,11 +96,7 @@ internal object LibMpv {
     external fun getPropertyMap(handle: MpvHandle, property: String): Map<String, MpvNode>?
 
     @JvmStatic
-    external fun observeProperty(
-        handle: MpvHandle,
-        property: String,
-        format: Int
-    )
+    external fun observeProperty(handle: MpvHandle, property: String, format: Int)
 
     @JvmStatic
     external fun unobserveProperty(handle: MpvHandle, id: Long)
@@ -141,12 +105,7 @@ internal object LibMpv {
     external fun delProperty(handle: MpvHandle, property: String)
 
     @JvmStatic
-    external fun hookAdd(
-        handle: MpvHandle,
-        reply: Long,
-        name: String,
-        priority: Int
-    )
+    external fun hookAdd(handle: MpvHandle, reply: Long, name: String, priority: Int)
 
     @JvmStatic
     external fun hookContinue(handle: MpvHandle, id: Long)
@@ -158,17 +117,13 @@ internal object LibMpv {
     external fun getTimeUs(handle: MpvHandle): Long
 
     @JvmStatic
-    external fun requestEvent(
-        handle: MpvHandle,
-        event: Int,
-        enable: Boolean
-    ): Int
+    external fun requestEvent(handle: MpvHandle, event: Int, enable: Boolean): Int
 
     @JvmStatic
     external fun waitEvent(handle: MpvHandle, timeout: Double): Int
 
     @JvmStatic
-    external fun setWakeupCallback(handle: MpvHandle, callback: () -> Unit)
+    external fun setWakeupCallback(handle: MpvHandle, callback: MpvWakeupCallback)
 
     @JvmStatic
     external fun getErrorString(error: Int): String
@@ -177,26 +132,23 @@ internal object LibMpv {
     external fun loadConfigFile(handle: MpvHandle, path: String): Int
 
     @JvmStatic
-    external fun renderContextCreate(
-        handle: MpvHandle,
-        params: List<MpvRenderParam>
-    ): MpvRenderContext
+    external fun renderContextCreate(handle: MpvHandle, apiType: MpvRenderApiType, params: List<MpvRenderParam>): Long
 
     @JvmStatic
-    external fun renderContextFree(ctx: MpvRenderContext)
+    external fun renderContextFree(ctx: Long)
 
     @JvmStatic
-    external fun renderContextGetInfo(ctx: MpvRenderContext, param: MpvRenderParam)
+    external fun renderContextGetInfo(ctx: Long, param: MpvRenderParam): Any
 
     @JvmStatic
-    external fun renderContextSetParameter(ctx: MpvRenderContext, param: MpvRenderParam)
+    external fun renderContextSetParameter(ctx: Long, param: MpvRenderParam)
 
     @JvmStatic
-    external fun renderContextUpdate(ctx: MpvRenderContext): ULong
+    external fun renderContextUpdate(ctx: Long): ULong
 
     @JvmStatic
-    external fun renderContextRender(ctx: MpvRenderContext, params: Array<MpvRenderParam>)
+    external fun renderContextRender(ctx: Long, params: Array<MpvRenderParam>)
 
     @JvmStatic
-    external fun renderContextSetUpdateCallback(ctx: MpvRenderContext, callback: () -> Unit)
+    external fun renderContextSetUpdateCallback(ctx: Long, callback: MpvRenderUpdateCallback)
 }

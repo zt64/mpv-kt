@@ -10,12 +10,18 @@ public actual class Mpv(internal val handle: MpvHandle) : AutoCloseable {
     public actual val clientId: Long
         get() = LibMpv.clientId(handle)
 
+    internal actual var isInitialized: Boolean = false
+
     public actual fun requestLogMessages(level: MpvLogLevel) {
         LibMpv.requestLogMessages(handle, level.value.toString())
     }
 
     public actual fun init() {
+        if (isInitialized) throw IllegalStateException("Already initialized")
+
         LibMpv.init(handle)
+
+        isInitialized = true
     }
 
     public actual fun requestEvent(eventId: Int, enable: Boolean) {
@@ -31,7 +37,7 @@ public actual class Mpv(internal val handle: MpvHandle) : AutoCloseable {
         LibMpv.wakeup(handle)
     }
 
-    public actual fun setWakeupCallback(callback: () -> Unit) {
+    public actual fun setWakeupCallback(callback: MpvWakeupCallback) {
         LibMpv.setWakeupCallback(handle, callback)
     }
 
@@ -39,13 +45,8 @@ public actual class Mpv(internal val handle: MpvHandle) : AutoCloseable {
         LibMpv.waitAsyncRequests(handle)
     }
 
-    public actual fun addHook(
-        reply: Long,
-        name: String,
-        priority: Int,
-        callback: () -> Unit
-    ) {
-        LibMpv.hookAdd(handle, reply, name, priority)
+    public actual fun addHook(name: String, priority: Int, callback: () -> Unit) {
+        LibMpv.hookAdd(handle, 0, name, priority)
     }
 
     public actual fun hookContinue(id: Long) {

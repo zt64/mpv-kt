@@ -3,7 +3,8 @@
 #include <jni.h>
 
 #define jni_func_name(name) Java_dev_zt64_mpvkt_LibMpv_##name
-#define jni_func(return_type, name, ...) JNIEXPORT return_type JNICALL jni_func_name(name) (JNIEnv *env, jobject obj, ##__VA_ARGS__)
+#define jni_func(signature, name, ...) \
+extern "C" JNIEXPORT signature JNICALL jni_func_name(name)(JNIEnv *env, jobject obj, ##__VA_ARGS__)
 
 bool acquire_jni_env(JavaVM *vm, JNIEnv **env);
 
@@ -34,6 +35,15 @@ inline jmethodID mpv_MpvNode_init;
 
 inline jclass mpv_MpvNodeString, mpv_MpvNodeFlag, mpv_MpvNodeLong, mpv_MpvNodeDouble, mpv_MpvNodeArray, mpv_MpvNodeMap, mpv_MpvNodeByte;
 inline jmethodID mpv_MpvNodeString_init, mpv_MpvNodeFlag_init, mpv_MpvNodeLong_init, mpv_MpvNodeDouble_init, mpv_MpvNodeArray_init, mpv_MpvNodeMap_init, mpv_MpvNodeByte_init;
+
+inline jclass mpv_MpvRenderApiType;
+inline jmethodID mpv_MpvRenderApiType_getOrdinal;
+
+inline jclass mpv_MpvWakeupCallback;
+inline jmethodID mpv_MpvWakeupCallback_invoke;
+
+inline jclass mpv_MpvRenderUpdateCallback;
+inline jmethodID mpv_MpvRenderUpdateCallback_invoke;
 
 inline jclass java_Map;
 inline jmethodID java_Map_init, java_Map_put;

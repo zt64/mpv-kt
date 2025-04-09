@@ -1,6 +1,6 @@
 project('mpv_jni', ['cpp'],
         version : '0.1.0',
-        default_options : ['cpp_std=c++17', 'fribidi:docs=false', 'fribidi:tests=false']
+        default_options : ['cpp_std=c++20', 'fribidi:docs=false', 'fribidi:tests=false']
 )
 
 #jni = dependency('jni', include_type : 'system', required : false)

@@ -9,14 +9,6 @@ public expect fun MpvRenderParam(name: String, value: String): MpvRenderParam
 public sealed interface RenderParam {
     public val type: MpvRenderParamType
 
-    public data object Invalid : RenderParam {
-        override val type: MpvRenderParamType = MpvRenderParamType.INVALID
-    }
-
-    public data class ApiType(val apiType: String) : RenderParam {
-        override val type: MpvRenderParamType = MpvRenderParamType.API_TYPE
-    }
-
     public data class OpenGLInitParams(val params: MpvNode) : RenderParam {
         override val type: MpvRenderParamType = MpvRenderParamType.OPENGL_INIT_PARAMS
     }
@@ -49,7 +41,7 @@ public sealed interface RenderParam {
         override val type: MpvRenderParamType = MpvRenderParamType.WL_DISPLAY
     }
 
-    public data class AdvancedControl(val control: MpvNode) : RenderParam {
+    public data class AdvancedControl(val control: Boolean) : RenderParam {
         override val type: MpvRenderParamType = MpvRenderParamType.ADVANCED_CONTROL
     }
 

@@ -153,6 +153,7 @@ fun DockcrossRunTask.baseConfigure(linkMode: NativeLinkMode, outputTo: Directory
             "setup",
             "./",
             "$relativePathToProject/native",
+            "-Dcpp_std=c++20",
             "--buildtype=${if (buildReleaseBinaries) "release" else "debug"}"
             // "--cross-file=../native.ini"
         ),
@@ -265,6 +266,10 @@ kotlin {
         compilations.getByName("main") {
             cinterops.create("libmpv")
         }
+
+        compilerOptions {
+            optIn.addAll("kotlinx.cinterop.ExperimentalForeignApi")
+        }
     }
 
     sourceSets {
@@ -294,10 +299,6 @@ kotlin {
                 }
             }
         }
-    }
-
-    compilerOptions {
-        optIn.addAll("kotlinx.cinterop.ExperimentalForeignApi")
     }
 }
 
