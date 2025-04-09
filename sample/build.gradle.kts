@@ -57,12 +57,12 @@ kotlin {
 
 android {
     namespace = "dev.zt64.sample"
-    compileSdk = 34
+    compileSdk = 35
 
     ndkVersion = "28.0.12433566"
 
     defaultConfig {
-        targetSdk = 34
+        targetSdk = 35
         minSdk = 21
 
         externalNativeBuild {
