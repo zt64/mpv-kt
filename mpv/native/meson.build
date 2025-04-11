@@ -68,6 +68,7 @@ mpv_jni = shared_library(
     'src/jni_utils.cpp',
     'src/client.cpp',
     'src/property.cpp',
+    'src/event.cpp',
     'src/render.cpp',
     'src/render_gl.cpp',
     'src/stream_cb.cpp',

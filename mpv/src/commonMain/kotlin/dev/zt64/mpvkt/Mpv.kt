@@ -45,7 +45,7 @@ public expect class Mpv() : AutoCloseable {
      * @param timeout The timeout in milliseconds
      * @return The event
      */
-    public fun waitEvent(timeout: Long): MpvEvent
+    public fun waitEvent(timeout: Long): MpvEvent?
 
     /**
      * Interrupt the current [waitEvent] call. This will wake up the thread
@@ -80,7 +80,7 @@ public expect class Mpv() : AutoCloseable {
      * @param name
      * @param priority
      */
-    public fun addHook(name: String, priority: Int = 0, callback: () -> Unit)
+    public fun addHook(name: String, priority: Int = 0, callback: MpvHook)
 
     /**
      * TODO: Document

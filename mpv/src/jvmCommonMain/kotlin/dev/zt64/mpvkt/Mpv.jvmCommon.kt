@@ -28,9 +28,8 @@ public actual class Mpv(internal val handle: MpvHandle) : AutoCloseable {
         LibMpv.requestEvent(handle, eventId, enable)
     }
 
-    public actual fun waitEvent(timeout: Long): MpvEvent {
-        LibMpv.waitEvent(handle, timeout.toDouble())
-        TODO()
+    public actual fun waitEvent(timeout: Long): MpvEvent? {
+        return LibMpv.waitEvent(handle, timeout.toDouble())
     }
 
     public actual fun wakeup() {

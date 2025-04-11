@@ -120,7 +120,7 @@ internal object LibMpv {
     external fun requestEvent(handle: MpvHandle, event: Int, enable: Boolean): Int
 
     @JvmStatic
-    external fun waitEvent(handle: MpvHandle, timeout: Double): Int
+    external fun waitEvent(handle: MpvHandle, timeout: Double): MpvEvent?
 
     @JvmStatic
     external fun setWakeupCallback(handle: MpvHandle, callback: MpvWakeupCallback)

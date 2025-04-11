@@ -12,30 +12,44 @@ void init_methods_cache(JNIEnv *env);
 
 void handleMpvError(JNIEnv *env, int error);
 
-#define PRIMITIVE(name, value) \
-extern jclass java_##name;     \
-extern jmethodID java_##name##_init, java_##name##_##value;
+// Primitive types declaration macro
+#define DECLARE_PRIMITIVE(name, value) \
+inline jclass java_##name; \
+inline jmethodID java_##name##_init, java_##name##_##value;
 
-PRIMITIVE(Integer, intValue)
-PRIMITIVE(Double, doubleValue)
-PRIMITIVE(Long, longValue)
-PRIMITIVE(Boolean, booleanValue)
+DECLARE_PRIMITIVE(Integer, intValue)
+DECLARE_PRIMITIVE(Double, doubleValue)
+DECLARE_PRIMITIVE(Long, longValue)
+DECLARE_PRIMITIVE(Boolean, booleanValue)
 
-#undef PRIMITIVE
+// MpvNode classes declaration macro
+#define DECLARE_NODE(name) \
+inline jclass mpv_MpvNode##name; \
+inline jmethodID mpv_MpvNode##name##_init;
 
-extern jclass mpv_MPVLib;
-extern jmethodID mpv_MPVLib_eventProperty_S, mpv_MPVLib_eventProperty_Sb, mpv_MPVLib_eventProperty_Sl, mpv_MPVLib_eventProperty_SS, mpv_MPVLib_event, mpv_MPVLib_logMessage_SiS;
+// MpvEvent classes declaration macro
+#define DECLARE_EVENT(name) \
+inline jclass mpv_MpvEvent_##name; \
+inline jmethodID mpv_MpvEvent_##name##_init;
 
+// Exception class
 inline jclass mpv_MPVException;
 inline jmethodID mpv_MPVException_init;
 
-// class MpvNode
+// MpvNode base class
 inline jclass mpv_MpvNode;
 inline jmethodID mpv_MpvNode_init;
 
-inline jclass mpv_MpvNodeString, mpv_MpvNodeFlag, mpv_MpvNodeLong, mpv_MpvNodeDouble, mpv_MpvNodeArray, mpv_MpvNodeMap, mpv_MpvNodeByte;
-inline jmethodID mpv_MpvNodeString_init, mpv_MpvNodeFlag_init, mpv_MpvNodeLong_init, mpv_MpvNodeDouble_init, mpv_MpvNodeArray_init, mpv_MpvNodeMap_init, mpv_MpvNodeByte_init;
+// Node types
+DECLARE_NODE(String)
+DECLARE_NODE(Flag)
+DECLARE_NODE(Long)
+DECLARE_NODE(Double)
+DECLARE_NODE(Array)
+DECLARE_NODE(Map)
+DECLARE_NODE(Byte)
 
+// API type and callbacks
 inline jclass mpv_MpvRenderApiType;
 inline jmethodID mpv_MpvRenderApiType_getOrdinal;
 
@@ -45,5 +59,31 @@ inline jmethodID mpv_MpvWakeupCallback_invoke;
 inline jclass mpv_MpvRenderUpdateCallback;
 inline jmethodID mpv_MpvRenderUpdateCallback_invoke;
 
+// Event types
+DECLARE_EVENT(Shutdown)
+DECLARE_EVENT(LogMessage)
+DECLARE_EVENT(GetPropertyReply)
+DECLARE_EVENT(SetPropertyReply)
+DECLARE_EVENT(CommandReply)
+DECLARE_EVENT(StartFile)
+DECLARE_EVENT(EndFile)
+DECLARE_EVENT(FileLoaded)
+DECLARE_EVENT(ClientMessage)
+DECLARE_EVENT(VideoReconfig)
+DECLARE_EVENT(AudioReconfig)
+DECLARE_EVENT(Seek)
+DECLARE_EVENT(PlaybackRestart)
+DECLARE_EVENT(PropertyChange)
+DECLARE_EVENT(QueueOverflow)
+DECLARE_EVENT(Hook)
+
+// Map for node implementations
 inline jclass java_Map;
 inline jmethodID java_Map_init, java_Map_put;
+
+inline jclass mpv_MpvLogLevel;
+inline jmethodID mpv_MpvLogLevel_init, mpv_MpvLogLevel_getOrdinal;
+
+#undef DECLARE_PRIMITIVE
+#undef DECLARE_NODE
+#undef DECLARE_EVENT
