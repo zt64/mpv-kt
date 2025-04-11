@@ -7,18 +7,17 @@ package dev.zt64.mpvkt
  * @param T The type of the property, must be one of [MpvNode]
  * @param name The name of the property
  * @return The value of the property
- * @see [MpvFormat] for the supported types
  */
 public inline fun <reified T : Any> Mpv.getProperty(name: String): T? = when (T::class) {
-    String::class -> getPropertyString(name) as T?
-    Boolean::class -> getPropertyFlag(name) as T?
-    Long::class -> getPropertyLong(name) as T?
-    Double::class -> getPropertyDouble(name) as T?
-    List::class -> getPropertyArray(name) as T?
-    Map::class -> getPropertyMap(name) as T?
-    ByteArray::class -> getPropertyByteArray(name) as T?
+    String::class -> getPropertyString(name)
+    Boolean::class -> getPropertyFlag(name)
+    Long::class -> getPropertyLong(name)
+    Double::class -> getPropertyDouble(name)
+    List::class -> getPropertyArray(name)
+    Map::class -> getPropertyMap(name)
+    ByteArray::class -> getPropertyByteArray(name)
     else -> throw IllegalArgumentException("Unsupported property type: ${T::class}")
-}
+} as T?
 
 public expect fun Mpv.getPropertyString(name: String): String?
 

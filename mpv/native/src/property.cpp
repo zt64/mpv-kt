@@ -1,9 +1,9 @@
 #include <mpv/client.h>
 #include "jni_utils.h"
 
-jni_func(jint, setOption, jlong handle, jstring option, jstring value) {
-    const char *opt = env->GetStringUTFChars(option, nullptr);
-    const char *val = env->GetStringUTFChars(value, nullptr);
+jni_func(jint, setOption, const jlong handle, jstring option, jstring value) {
+    const char* opt = env->GetStringUTFChars(option, nullptr);
+    const char* val = env->GetStringUTFChars(value, nullptr);
 
     const int ret = mpv_set_option_string(reinterpret_cast<mpv_handle *>(handle), opt, val);
 
@@ -13,82 +13,94 @@ jni_func(jint, setOption, jlong handle, jstring option, jstring value) {
     return ret;
 }
 
-static void common_get_property(JNIEnv *env, const jlong handle, jstring property, mpv_format format, void *output) {
-    const char *prop = env->GetStringUTFChars(property, nullptr);
+static void common_get_property(
+    JNIEnv* env,
+    const jlong handle,
+    jstring property,
+    const mpv_format format,
+    void* output
+) {
+    const char* prop = env->GetStringUTFChars(property, nullptr);
     const int result = mpv_get_property(reinterpret_cast<mpv_handle *>(handle), prop, format, output);
     env->ReleaseStringUTFChars(property, prop);
 
     handleMpvError(env, result);
 }
 
-static int common_set_property(JNIEnv *env, const jlong handle, jstring property, mpv_format format, void *value) {
-    const char *prop = env->GetStringUTFChars(property, nullptr);
+static int common_set_property(
+    JNIEnv* env,
+    const jlong handle,
+    jstring property,
+    const mpv_format format,
+    void* value
+) {
+    const char* prop = env->GetStringUTFChars(property, nullptr);
     const int result = mpv_set_property(reinterpret_cast<mpv_handle *>(handle), prop, format, value);
     env->ReleaseStringUTFChars(property, prop);
 
     return result;
 }
 
-jobject initJavaLong(JNIEnv *env, jlong value) {
+jobject initJavaLong(JNIEnv* env, const jlong value) {
     return env->NewObject(java_Long, java_Long_init, value);
 }
 
-jni_func(jobject, getPropertyLong, jlong handle, jstring property) {
+jni_func(jobject, getPropertyLong, const jlong handle, jstring property) {
     int64_t value = 0;
     common_get_property(env, handle, property, MPV_FORMAT_INT64, &value);
     return env->NewObject(java_Long, java_Long_init, value);
 }
 
-jni_func(void, setPropertyLong, jlong handle, jstring property, jlong value) {
+jni_func(void, setPropertyLong, const jlong handle, jstring property, jlong value) {
     common_set_property(env, handle, property, MPV_FORMAT_INT64, &value);
 }
 
-jobject initJavaDouble(JNIEnv *env, jdouble value) {
+jobject initJavaDouble(JNIEnv* env, const jdouble value) {
     return env->NewObject(java_Double, java_Double_init, value);
 }
 
-jni_func(jobject, getPropertyDouble, jlong handle, jstring property) {
+jni_func(jobject, getPropertyDouble, const jlong handle, const jstring property) {
     double value = 0;
     common_get_property(env, handle, property, MPV_FORMAT_DOUBLE, &value);
     return env->NewObject(java_Double, java_Double_init, value);
 }
 
-jni_func(void, setPropertyDouble, jlong handle, jstring property, jdouble value) {
+jni_func(void, setPropertyDouble, const jlong handle, const jstring property, jdouble value) {
     common_set_property(env, handle, property, MPV_FORMAT_DOUBLE, &value);
 }
 
-jobject initJavaBoolean(JNIEnv *env, jboolean value) {
+jobject initJavaBoolean(JNIEnv* env, const jboolean value) {
     return env->NewObject(java_Boolean, java_Boolean_init, value);
 }
 
-jni_func(jobject, getPropertyFlag, jlong handle, jstring property) {
+jni_func(jobject, getPropertyFlag, const jlong handle, jstring property) {
     int value = 0;
     common_get_property(env, handle, property, MPV_FORMAT_FLAG, &value);
-    return env->NewObject(java_Boolean, java_Boolean_init, (jboolean) value);
+    return env->NewObject(java_Boolean, java_Boolean_init, static_cast<jboolean>(value));
 }
 
-jni_func(void, setPropertyFlag, jlong handle, jstring property, jboolean value) {
+jni_func(void, setPropertyFlag, const jlong handle, jstring property, jboolean value) {
     common_set_property(env, handle, property, MPV_FORMAT_FLAG, &value);
 }
 
-jni_func(jstring, getPropertyString, jlong handle, jstring property) {
-    char *value = nullptr;
+jni_func(jstring, getPropertyString, const jlong handle, jstring property) {
+    char* value = nullptr;
     common_get_property(env, handle, property, MPV_FORMAT_STRING, &value);
-    const jstring &ret = env->NewStringUTF(value);
+    const jstring&ret = env->NewStringUTF(value);
     mpv_free(value);
     return ret;
 }
 
-jni_func(void, setPropertyString, jlong handle, jstring property, jstring jvalue) {
-    const char *value = env->GetStringUTFChars(jvalue, nullptr);
+jni_func(void, setPropertyString, const jlong handle, jstring property, jstring jvalue) {
+    const char* value = env->GetStringUTFChars(jvalue, nullptr);
     common_set_property(env, handle, property, MPV_FORMAT_STRING, &value);
     env->ReleaseStringUTFChars(jvalue, value);
 }
 
-jobject nodeToJobject(JNIEnv *env, mpv_node node);
+static jobject nodeToJobject(JNIEnv* env, mpv_node node);
 
-jobjectArray arrayToJvm(JNIEnv *env, const mpv_node value) {
-    const mpv_node_list *list = value.u.list;
+static jobjectArray arrayToJvm(JNIEnv* env, const mpv_node value) {
+    const mpv_node_list* list = value.u.list;
     jobjectArray objArr = env->NewObjectArray(list->num, mpv_MpvNode, nullptr);
 
     for (int i = 0; i < list->num; i++) {
@@ -101,11 +113,11 @@ jobjectArray arrayToJvm(JNIEnv *env, const mpv_node value) {
     return objArr;
 }
 
-jobject mapToJvm(JNIEnv *env, const mpv_node node) {
+static jobject mapToJvm(JNIEnv* env, const mpv_node node) {
     // Create a local reference frame for 256 references
     env->PushLocalFrame(256);
 
-    const mpv_node_list *list = node.u.list;
+    const mpv_node_list* list = node.u.list;
 
     // Create the Java HashMap
     const jobject hashMap = env->NewObject(java_Map, java_Map_init);
@@ -115,7 +127,7 @@ jobject mapToJvm(JNIEnv *env, const mpv_node node) {
     for (int i = 0; i < list->num; i++) {
         printf("Here %i", i);
         const char* keyStr = list->keys[i - 0];
-        if (keyStr == nullptr) continue;  // Ensure the key is valid
+        if (keyStr == nullptr) continue; // Ensure the key is valid
 
         printf("Key: %s", keyStr);
         // Convert key to jstring
@@ -136,20 +148,20 @@ jobject mapToJvm(JNIEnv *env, const mpv_node node) {
     return env->PopLocalFrame(hashMap);
 }
 
-jni_func(jobjectArray, getPropertyArray, const jlong handle, jstring property) {
+jni_func(jobjectArray, getPropertyArray, const jlong handle, const jstring property) {
     mpv_node value;
     common_get_property(env, handle, property, MPV_FORMAT_NODE, &value);
     return arrayToJvm(env, value);
 }
 
-jni_func(jobject, getPropertyMap, const jlong handle, jstring property) {
+jni_func(jobject, getPropertyMap, const jlong handle, const jstring property) {
     mpv_node value;
     common_get_property(env, handle, property, MPV_FORMAT_NODE, &value);
     return mapToJvm(env, value);
 }
 
-jni_func(void, observeProperty, jlong handle, jstring property, jint format) {
-    const char *prop = env->GetStringUTFChars(property, nullptr);
+jni_func(void, observeProperty, const jlong handle, const jstring property, const jint format) {
+    const char* prop = env->GetStringUTFChars(property, nullptr);
     mpv_observe_property(reinterpret_cast<mpv_handle *>(handle), 0, prop, static_cast<mpv_format>(format));
     env->ReleaseStringUTFChars(property, prop);
 }
@@ -159,14 +171,14 @@ jni_func(void, unobserveProperty, const jlong handle, const uint64_t reply) {
     handleMpvError(env, ret);
 }
 
-jni_func(void, delProperty, jlong handle, jstring property) {
-    const char *prop = env->GetStringUTFChars(property, nullptr);
+jni_func(void, delProperty, const jlong handle, const jstring property) {
+    const char* prop = env->GetStringUTFChars(property, nullptr);
     const auto err = mpv_del_property(reinterpret_cast<mpv_handle *>(handle), prop);
     env->ReleaseStringUTFChars(property, prop);
     handleMpvError(env, err);
 }
 
-jobject nodeToJobject(JNIEnv *env, mpv_node node) {
+static jobject nodeToJobject(JNIEnv* env, const mpv_node node) {
     switch (node.format) {
         case MPV_FORMAT_OSD_STRING:
         case MPV_FORMAT_STRING: {
@@ -189,7 +201,7 @@ jobject nodeToJobject(JNIEnv *env, mpv_node node) {
         case MPV_FORMAT_NODE_MAP:
             return mapToJvm(env, node);
         case MPV_FORMAT_BYTE_ARRAY: {
-            const mpv_byte_array *ba = node.u.ba;
+            const mpv_byte_array* ba = node.u.ba;
 
             const jbyteArray jba = env->NewByteArray(ba->size);
             if (jba == nullptr) {

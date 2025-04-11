@@ -8,8 +8,14 @@ import dev.zt64.mpvkt.Mpv
  * @param params
  * @return
  */
-public expect fun Mpv.renderContextCreate(apiType: MpvRenderApiType, params: List<RenderParam> = emptyList()): MpvRenderContext
+public expect fun Mpv.renderContextCreate(
+    apiType: MpvRenderApiType,
+    params: List<RenderParam> = emptyList()
+): MpvRenderContext
 
-public fun Mpv.renderContextCreate(apiType: MpvRenderApiType, vararg params: RenderParam): MpvRenderContext {
+public fun Mpv.renderContextCreate(
+    apiType: MpvRenderApiType,
+    vararg params: RenderParam
+): MpvRenderContext {
     return renderContextCreate(apiType, params.toList())
 }

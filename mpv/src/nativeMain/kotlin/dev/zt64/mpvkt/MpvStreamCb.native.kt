@@ -30,7 +30,10 @@ public actual inline fun <reified T : Any> MpvStreamCbInfo(
     }
 }
 
-public actual fun Mpv.streamCbAddRo(protocol: String, openFn: MpvStreamCbOpenRoFn) {
+public actual fun Mpv.streamCbAddRo(
+    protocol: String,
+    openFn: MpvStreamCbOpenRoFn
+) {
     mpv_stream_cb_add_ro(
         ctx = handle,
         protocol = protocol,

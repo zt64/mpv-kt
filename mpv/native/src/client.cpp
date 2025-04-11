@@ -44,7 +44,7 @@ jni_func(void, wakeup, const jlong handle) {
     mpv_wakeup(reinterpret_cast<mpv_handle *>(handle));
 }
 
-jni_func(void, requestLogMessages, const jlong handle, jstring level) {
+jni_func(void, requestLogMessages, const jlong handle, const jstring level) {
     const char* nativeString = env->GetStringUTFChars(level, nullptr);
 
     mpv_request_log_messages(reinterpret_cast<mpv_handle *>(handle), nativeString);
@@ -65,12 +65,8 @@ jni_func(void, waitAsyncRequests, const jlong handle) {
 //
 //     return event_ ? env->NewObject(mpv_MpvEvent, mpv_MpvEvent_init, (jlong) event_) : nullptr;
 // }
-//
-// jni_func(jobject, waitEvent, jlong handle, jlong reply) {
-//     mpv_event *event_ = mpv_wait_event(reinterpret_cast<mpv_handle *>(handle), reply);
-//
-//     return env->NewObject(mpv_MpvEvent, mpv_MpvEvent_init, (jlong) event_);
-// }
+
+
 
 jni_func(void, command, const jlong handle, jobjectArray jarray) {
     const char* arguments[128] = {nullptr};

@@ -9,8 +9,8 @@ public actual class MpvRenderContext internal constructor(private val ctx: Long)
         // return LibMpv.renderContextGetInfo(ctx, param)
     }
 
-    public actual fun setParameter(param: MpvRenderParam) {
-        LibMpv.renderContextSetParameter(ctx, param)
+    public actual fun setParameter(param: MpvRenderParam, value: Any) {
+        LibMpv.renderContextSetParameter(ctx, param, value)
     }
 
     public actual fun update(): ULong {

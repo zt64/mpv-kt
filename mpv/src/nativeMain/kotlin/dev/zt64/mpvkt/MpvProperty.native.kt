@@ -3,7 +3,11 @@ package dev.zt64.mpvkt
 import kotlinx.cinterop.*
 import mpv.*
 
-private inline fun <reified T : CVariable> MemScope.getPropertyCommon(handle: MpvHandle, name: String, format: UInt): T = alloc<T> {
+private inline fun <reified T : CVariable> MemScope.getPropertyCommon(
+    handle: MpvHandle,
+    name: String,
+    format: UInt
+): T = alloc<T> {
     mpv_get_property(handle, name, format, ptr).checkError()
 }
 
@@ -41,15 +45,24 @@ public actual fun Mpv.getPropertyMap(name: String): Map<String, MpvNode>? = memS
 
 public actual fun Mpv.getPropertyByteArray(name: String): ByteArray? = TODO()
 
-public actual fun Mpv.setOption(name: String, value: String) {
+public actual fun Mpv.setOption(
+    name: String,
+    value: String
+) {
     mpv_set_option_string(handle, name, value).checkError()
 }
 
-public actual fun Mpv.setProperty(name: String, value: String) {
+public actual fun Mpv.setProperty(
+    name: String,
+    value: String
+) {
     mpv_set_property_string(handle, name, value).checkError()
 }
 
-public actual fun Mpv.setProperty(name: String, value: Boolean) {
+public actual fun Mpv.setProperty(
+    name: String,
+    value: Boolean
+) {
     memScoped {
         val data = alloc<UInt>(if (value) 1u else 0u)
 
@@ -57,7 +70,10 @@ public actual fun Mpv.setProperty(name: String, value: Boolean) {
     }
 }
 
-public actual fun Mpv.setProperty(name: String, value: Long) {
+public actual fun Mpv.setProperty(
+    name: String,
+    value: Long
+) {
     memScoped {
         val data = alloc(value)
 
@@ -65,7 +81,10 @@ public actual fun Mpv.setProperty(name: String, value: Long) {
     }
 }
 
-public actual fun Mpv.setProperty(name: String, value: Double) {
+public actual fun Mpv.setProperty(
+    name: String,
+    value: Double
+) {
     memScoped {
         val data = alloc(value)
 
@@ -73,13 +92,25 @@ public actual fun Mpv.setProperty(name: String, value: Double) {
     }
 }
 
-public actual fun Mpv.setProperty(name: String, value: List<MpvNode>): Unit = TODO()
+public actual fun Mpv.setProperty(
+    name: String,
+    value: List<MpvNode>
+): Unit = TODO()
 
-public actual fun Mpv.setProperty(name: String, value: Map<String, MpvNode>): Unit = TODO()
+public actual fun Mpv.setProperty(
+    name: String,
+    value: Map<String, MpvNode>
+): Unit = TODO()
 
-public actual fun Mpv.setProperty(name: String, value: ByteArray): Unit = TODO()
+public actual fun Mpv.setProperty(
+    name: String,
+    value: ByteArray
+): Unit = TODO()
 
-public actual fun <T> Mpv.observeProperty(name: String, callback: (T) -> Unit) {
+public actual fun <T> Mpv.observeProperty(
+    name: String,
+    callback: (T) -> Unit
+) {
     mpv_observe_property(handle, 0u, name, MPV_FORMAT_NONE).checkError()
     TODO()
 }

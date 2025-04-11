@@ -6,15 +6,14 @@ import java.nio.file.Files
 internal expect fun loadNativeLibrary(libName: String)
 
 internal object NativeLoader {
-    fun loadLibrary(name: String) {
-        loadNativeLibrary(name)
-    }
+    fun loadLibrary(name: String) = loadNativeLibrary(name)
 
     fun loadLibrary(classLoader: ClassLoader, libName: String) {
         try {
             val url = classLoader.getResource("native/${libFilename(libName)}")
 
-            val file = Files.createTempFile("$libName-", "-${libFilename(nameOnly(libName))}")
+            val file = Files
+                .createTempFile("$libName-", "-${libFilename(nameOnly(libName))}")
                 .toFile()
                 .apply {
                     deleteOnExit()

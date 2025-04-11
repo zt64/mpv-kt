@@ -4,7 +4,10 @@ import dev.zt64.mpvkt.MpvNode
 
 public expect class MpvRenderParam
 
-public expect fun MpvRenderParam(name: String, value: String): MpvRenderParam
+public expect fun MpvRenderParam(
+    name: String,
+    value: String
+): MpvRenderParam
 
 public sealed interface RenderParam {
     public val type: MpvRenderParamType

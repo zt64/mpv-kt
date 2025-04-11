@@ -33,7 +33,10 @@ public actual class Mpv public actual constructor() : AutoCloseable {
         mpv_request_log_messages(handle, level.toString()).checkError()
     }
 
-    public actual fun requestEvent(eventId: Int, enable: Boolean) {
+    public actual fun requestEvent(
+        eventId: Int,
+        enable: Boolean
+    ) {
         mpv_request_event(handle, eventId.toUInt(), if (enable) 1 else 0).checkError()
     }
 
@@ -58,7 +61,11 @@ public actual class Mpv public actual constructor() : AutoCloseable {
 
     public actual fun waitAsyncRequests(): Unit = mpv_wait_async_requests(handle)
 
-    public actual fun addHook(name: String, priority: Int, callback: () -> Unit) {
+    public actual fun addHook(
+        name: String,
+        priority: Int,
+        callback: () -> Unit
+    ) {
         mpv_hook_add(handle, 0u, name, priority).checkError()
     }
 

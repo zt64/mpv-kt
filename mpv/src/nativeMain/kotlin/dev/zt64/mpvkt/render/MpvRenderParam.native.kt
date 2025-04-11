@@ -6,7 +6,10 @@ import mpv.mpv_render_param
 
 public actual typealias MpvRenderParam = mpv_render_param
 
-public actual fun MpvRenderParam(name: String, value: String): MpvRenderParam {
+public actual fun MpvRenderParam(
+    name: String,
+    value: String
+): MpvRenderParam {
     return nativeHeap.alloc<MpvRenderParam> {
         this.type
         this.data

@@ -57,7 +57,7 @@ jni_func(jlong, renderContextCreate, const jlong handle, const jobject apiType, 
     return reinterpret_cast<jlong>(res);
 }
 
-jni_func(int, renderContextSetParameter, const jlong ctx, jlong param) {
+jni_func(int, renderContextSetParameter, const jlong ctx, jlong param, jobject value) {
     return 0;
 }
 
@@ -136,7 +136,8 @@ jni_func(int, renderContextRender, const jlong ctx, jlongArray params) {
     }
 
     mpv_render_param* cparams_ptr = cparams;
-    mpv_render_context_render(reinterpret_cast<mpv_render_context *>(ctx), cparams_ptr);
+    const int result = mpv_render_context_render(reinterpret_cast<mpv_render_context *>(ctx), cparams_ptr);
+    handleMpvError(env, result);
 
     delete[] cparams;
 

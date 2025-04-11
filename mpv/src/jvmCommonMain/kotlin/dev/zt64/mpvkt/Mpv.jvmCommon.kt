@@ -44,7 +44,7 @@ public actual class Mpv(internal val handle: MpvHandle) : AutoCloseable {
         LibMpv.waitAsyncRequests(handle)
     }
 
-    public actual fun addHook(name: String, priority: Int, callback: () -> Unit) {
+    public actual fun addHook(name: String, priority: Int, callback: MpvHook) {
         LibMpv.hookAdd(handle, 0, name, priority)
     }
 

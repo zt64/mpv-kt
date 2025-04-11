@@ -7,8 +7,11 @@ import kotlin.test.Test
 class RenderTest {
     @Test
     fun test() = runMpvTest { mpv ->
-        mpv.renderContextCreate(MpvRenderApiType.OPENGL)
+        mpv.init()
+        val renderCtx = mpv.renderContextCreate(MpvRenderApiType.SW)
 
         // renderCtx.render()
+
+        renderCtx.close()
     }
 }

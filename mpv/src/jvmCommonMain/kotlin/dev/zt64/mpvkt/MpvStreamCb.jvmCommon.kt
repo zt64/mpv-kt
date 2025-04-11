@@ -14,4 +14,5 @@ public actual inline fun <T : Any> MpvStreamCbInfo(
 }
 
 public actual fun Mpv.streamCbAddRo(protocol: String, openFn: MpvStreamCbOpenRoFn) {
+    LibMpv.streamCbAddRo(handle, protocol, openFn)
 }

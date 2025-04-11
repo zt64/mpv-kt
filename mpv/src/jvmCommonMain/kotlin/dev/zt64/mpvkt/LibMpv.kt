@@ -105,7 +105,12 @@ internal object LibMpv {
     external fun delProperty(handle: MpvHandle, property: String)
 
     @JvmStatic
-    external fun hookAdd(handle: MpvHandle, reply: Long, name: String, priority: Int)
+    external fun hookAdd(
+        handle: MpvHandle,
+        reply: Long,
+        name: String,
+        priority: Int
+    )
 
     @JvmStatic
     external fun hookContinue(handle: MpvHandle, id: Long)
@@ -141,7 +146,7 @@ internal object LibMpv {
     external fun renderContextGetInfo(ctx: Long, param: MpvRenderParam): Any
 
     @JvmStatic
-    external fun renderContextSetParameter(ctx: Long, param: MpvRenderParam)
+    external fun renderContextSetParameter(ctx: Long, param: MpvRenderParam, value: Any)
 
     @JvmStatic
     external fun renderContextUpdate(ctx: Long): ULong
@@ -151,4 +156,7 @@ internal object LibMpv {
 
     @JvmStatic
     external fun renderContextSetUpdateCallback(ctx: Long, callback: MpvRenderUpdateCallback)
+
+    @JvmStatic
+    external fun streamCbAddRo(handle: MpvHandle, protocol: String, openFn: MpvStreamCbOpenRoFn)
 }

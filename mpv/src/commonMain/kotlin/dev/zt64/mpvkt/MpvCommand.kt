@@ -2,9 +2,7 @@ package dev.zt64.mpvkt
 
 import kotlin.random.Random
 
-internal fun generateReplyId(): Int {
-    return Random.nextInt()
-}
+internal fun generateReplyId(): Int = Random.nextInt()
 
 /**
  * See also: [list-of-input-commands](https://mpv.io/manual/stable/#list-of-input-commands)
