@@ -1,16 +1,13 @@
 #pragma once
 
+#include <client.h>
 #include <jni.h>
 
 #define jni_func_name(name) Java_dev_zt64_mpvkt_LibMpv_##name
 #define jni_func(signature, name, ...) \
 extern "C" JNIEXPORT signature JNICALL jni_func_name(name)(JNIEnv *env, jobject obj, ##__VA_ARGS__)
 
-bool acquire_jni_env(JavaVM *vm, JNIEnv **env);
 
-void init_methods_cache(JNIEnv *env);
-
-void handleMpvError(JNIEnv *env, int error);
 
 // Primitive types declaration macro
 #define DECLARE_PRIMITIVE(name, value) \
@@ -84,6 +81,20 @@ inline jmethodID java_Map_init, java_Map_put;
 inline jclass mpv_MpvLogLevel;
 inline jmethodID mpv_MpvLogLevel_init, mpv_MpvLogLevel_getOrdinal;
 
+inline jclass mpv_MpvEvent_EndFile_Reason;
+
 #undef DECLARE_PRIMITIVE
 #undef DECLARE_NODE
 #undef DECLARE_EVENT
+
+bool acquire_jni_env(JavaVM* vm, JNIEnv** env);
+void init_methods_cache(JNIEnv* env);
+void handleMpvError(JNIEnv* env, int error);
+
+jobject initJavaLong(JNIEnv* env, jlong value);
+jobject initJavaDouble(JNIEnv* env, jdouble value);
+jobject initJavaBoolean(JNIEnv* env, jboolean value);
+jobject initJavaString(JNIEnv* env, const char* value);
+jobjectArray arrayToJvm(JNIEnv* env, mpv_node value);
+jobject mapToJvm(JNIEnv* env, mpv_node node);
+jobject nodeToJobject(JNIEnv* env, mpv_node node);

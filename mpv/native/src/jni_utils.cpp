@@ -92,6 +92,8 @@ void init_methods_cache(JNIEnv* env) {
     FIND_EVENT(QueueOverflow, "()V")
     FIND_EVENT(Hook, "(Ljava/lang/String;JJ)V")
 
+    mpv_MpvEvent_EndFile_Reason = FIND_CLASS("dev/zt64/mpvkt/MpvEvent$EndFile$Reason");
+
 #undef FIND_PRIMITIVE
 #undef FIND_EVENT
 #undef FIND_NODE
@@ -102,4 +104,92 @@ void init_methods_cache(JNIEnv* env) {
 
 void handleMpvError(JNIEnv* env, const int error) {
     if (error < 0) env->ThrowNew(mpv_MPVException, mpv_error_string(error));
+}
+
+jobject initJavaLong(JNIEnv* env, const jlong value) {
+    return env->NewObject(java_Long, java_Long_init, value);
+}
+
+jobject initJavaDouble(JNIEnv* env, const jdouble value) {
+    return env->NewObject(java_Double, java_Double_init, value);
+}
+
+jobject initJavaBoolean(JNIEnv* env, const jboolean value) {
+    return env->NewObject(java_Boolean, java_Boolean_init, value);
+}
+
+jobject initJavaString(JNIEnv* env, const char* value) {
+    return env->NewStringUTF(value);
+}
+
+jobjectArray arrayToJvm(JNIEnv* env, const mpv_node value) {
+    const mpv_node_list* list = value.u.list;
+    jobjectArray objArr = env->NewObjectArray(list->num, mpv_MpvNode, nullptr);
+
+    for (int i = 0; i < list->num; i++) {
+        const mpv_node node = list->values[i];
+        jobject a = nodeToJobject(env, node);
+
+        env->SetObjectArrayElement(objArr, i, a);
+    }
+
+    return objArr;
+}
+
+jobject mapToJvm(JNIEnv* env, const mpv_node node) {
+    env->PushLocalFrame(256);
+
+    const mpv_node_list* list = node.u.list;
+    const jobject hashMap = env->NewObject(java_Map, java_Map_init);
+
+    for (int i = 0; i < list->num; i++) {
+        const char* keyStr = list->keys[i - 0];
+        if (keyStr == nullptr) continue; // Ensure the key is valid
+
+        const jstring key = env->NewStringUTF(keyStr);
+        const jobject value = nodeToJobject(env, list->values[i]);
+
+        env->CallObjectMethod(hashMap, java_Map_put, key, value);
+
+        env->DeleteLocalRef(key);
+        env->DeleteLocalRef(value);
+    }
+
+    return env->PopLocalFrame(hashMap);
+}
+
+jobject nodeToJobject(JNIEnv* env, const mpv_node node) {
+    switch (node.format) {
+        case MPV_FORMAT_OSD_STRING:
+        case MPV_FORMAT_STRING: {
+            jstring str = env->NewStringUTF(node.u.string);
+            jobject obj = env->NewObject(mpv_MpvNodeString, mpv_MpvNodeString_init, str);
+            env->DeleteLocalRef(str);
+            return obj;
+        }
+        case MPV_FORMAT_FLAG:
+            return initJavaBoolean(env, node.u.flag);
+        case MPV_FORMAT_INT64:
+            return initJavaLong(env, node.u.int64);
+        case MPV_FORMAT_DOUBLE:
+            return initJavaDouble(env, node.u.double_);
+        case MPV_FORMAT_NODE_ARRAY:
+            return arrayToJvm(env, node);
+        case MPV_FORMAT_NODE_MAP:
+            return mapToJvm(env, node);
+        case MPV_FORMAT_BYTE_ARRAY: {
+            const mpv_byte_array* ba = node.u.ba;
+            const jbyteArray jba = env->NewByteArray(ba->size);
+
+            if (jba == nullptr) return nullptr;
+
+            // Copy the native byte array data into the jbyteArray
+            env->SetByteArrayRegion(jba, 0, ba->size, static_cast<const jbyte *>(ba->data));
+
+            return jba;
+        }
+        default:
+            break;
+    }
+    return nullptr;
 }

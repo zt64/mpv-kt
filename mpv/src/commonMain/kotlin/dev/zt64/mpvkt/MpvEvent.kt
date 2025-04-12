@@ -18,7 +18,7 @@ public sealed interface MpvEvent {
 
     public data class SetPropertyReply(public val code: Int, override val replyUserData: Long) : Reply
 
-    public class CommandReply(
+    public data class CommandReply(
         public val code: Int,
         public val result: MpvNode,
         override val replyUserData: Long
@@ -26,17 +26,32 @@ public sealed interface MpvEvent {
 
     public data class StartFile(public val playlistEntryId: Int) : MpvEvent
 
-    public open class EndFile(
+    /**
+     *
+     */
+    public data class EndFile(
         public val reason: Reason,
         public val playlistEntryId: Int,
         public val playlistInsertId: Int,
         public val playlistInsertEntries: Int
     ) : MpvEvent {
+        /**
+         * The reason why the file ended
+         */
         public enum class Reason {
+            /** End of file reached during normal playback */
             EOF,
+
+            /** Playback was stopped by user or API call */
             STOP,
+
+            /** Application is shutting down */
             QUIT,
+
+            /** An error occurred during playback */
             ERROR,
+
+            /** Playback was redirected to another resource */
             REDIRECT
         }
     }

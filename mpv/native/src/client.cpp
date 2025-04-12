@@ -66,8 +66,6 @@ jni_func(void, waitAsyncRequests, const jlong handle) {
 //     return event_ ? env->NewObject(mpv_MpvEvent, mpv_MpvEvent_init, (jlong) event_) : nullptr;
 // }
 
-
-
 jni_func(void, command, const jlong handle, jobjectArray jarray) {
     const char* arguments[128] = {nullptr};
     const int len = env->GetArrayLength(jarray);
@@ -122,9 +120,11 @@ jni_func(void, hookContinue, const jlong handle, const jlong id) {
 
 static jobject globalCallback = nullptr;
 
-static void wakeupCallback(void* ctx) {
-    auto* env = static_cast<JNIEnv *>(ctx);
-    if (globalCallback != nullptr) env->CallVoidMethod(globalCallback, mpv_MpvWakeupCallback_invoke);
+static void wakeupCallback(void*) {
+    JNIEnv* newEnv;
+    g_vm->AttachCurrentThread(reinterpret_cast<void **>(&newEnv), nullptr);
+    if (globalCallback != nullptr) newEnv->CallVoidMethod(globalCallback, mpv_MpvWakeupCallback_invoke);
+    g_vm->DetachCurrentThread();
 }
 
 jni_func(void, setWakeupCallback, const jlong handle, jobject callback) {
@@ -136,7 +136,7 @@ jni_func(void, setWakeupCallback, const jlong handle, jobject callback) {
     globalCallback = env->NewGlobalRef(callback);
     if (globalCallback == nullptr) return;
 
-    mpv_set_wakeup_callback(reinterpret_cast<mpv_handle *>(handle), wakeupCallback, env);
+    mpv_set_wakeup_callback(reinterpret_cast<mpv_handle *>(handle), wakeupCallback, nullptr);
 }
 
 jni_func(jstring, getErrorString, const jint error) {
