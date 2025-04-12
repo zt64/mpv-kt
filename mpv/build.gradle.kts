@@ -266,10 +266,6 @@ kotlin {
         compilations.getByName("main") {
             cinterops.create("libmpv")
         }
-
-        compilerOptions {
-            optIn.addAll("kotlinx.cinterop.ExperimentalForeignApi")
-        }
     }
 
     sourceSets {
@@ -297,6 +293,12 @@ kotlin {
                 files(tasks.named("packageNativeLinuxX86_64").get()).also {
                     implementation(it)
                 }
+            }
+        }
+
+        nativeMain {
+            compilerOptions {
+                optIn.addAll("kotlinx.cinterop.ExperimentalForeignApi")
             }
         }
     }

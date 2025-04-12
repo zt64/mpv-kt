@@ -25,7 +25,7 @@ public class MpvState(private val handle: MpvHandle? = null) {
     private val mpv = if (handle != null) Mpv(handle) else Mpv()
 
     public constructor(url: String) : this() {
-        TODO()
+        TODO("Create MPV instance, and load the url")
     }
 
     public var position: Float by mutableStateOf(0f)
