@@ -33,21 +33,18 @@ public actual class Mpv public actual constructor() : AutoCloseable {
         mpv_request_log_messages(handle, level.toString()).checkError()
     }
 
-    public actual fun requestEvent(
-        eventId: Int,
-        enable: Boolean
-    ) {
+    public actual fun requestEvent(eventId: Int, enable: Boolean) {
         mpv_request_event(handle, eventId.toUInt(), if (enable) 1 else 0).checkError()
     }
 
-    public actual fun waitEvent(timeout: Long): MpvEvent {
+    public actual fun waitEvent(timeout: Long): MpvEvent? {
         mpv_wait_event(handle, timeout.toDouble())!!.pointed
         TODO()
     }
 
     public actual fun wakeup(): Unit = mpv_wakeup(handle)
 
-    public actual fun setWakeupCallback(callback: () -> Unit) {
+    public actual fun setWakeupCallback(callback: MpvWakeupCallback) {
         val ref = StableRef.create(callback)
 
         mpv_set_wakeup_callback(
@@ -61,11 +58,7 @@ public actual class Mpv public actual constructor() : AutoCloseable {
 
     public actual fun waitAsyncRequests(): Unit = mpv_wait_async_requests(handle)
 
-    public actual fun addHook(
-        name: String,
-        priority: Int,
-        callback: () -> Unit
-    ) {
+    public actual fun addHook(name: String, priority: Int, callback: MpvHook) {
         mpv_hook_add(handle, 0u, name, priority).checkError()
     }
 

@@ -97,9 +97,9 @@ jni_func(jobject, getPropertyMap, const jlong handle, const jstring property) {
     return mapToJvm(env, value);
 }
 
-jni_func(void, observeProperty, const jlong handle, const jstring property, const jint format) {
+jni_func(void, observeProperty, const jlong handle, const jlong id, const jstring property, const jint format) {
     const char* prop = env->GetStringUTFChars(property, nullptr);
-    mpv_observe_property(reinterpret_cast<mpv_handle *>(handle), 0, prop, static_cast<mpv_format>(format));
+    mpv_observe_property(reinterpret_cast<mpv_handle *>(handle), id, prop, static_cast<mpv_format>(format));
     env->ReleaseStringUTFChars(property, prop);
 }
 

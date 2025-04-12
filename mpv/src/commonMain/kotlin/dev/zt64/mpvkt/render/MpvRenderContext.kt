@@ -7,7 +7,7 @@ import dev.zt64.mpvkt.MpvRenderUpdateCallback
  *
  */
 public expect class MpvRenderContext {
-    public fun getInfo(param: MpvRenderParam): Any
+    public fun getInfo(param: MpvRenderParam): Any?
 
     public fun setParameter(param: MpvRenderParam, value: Any)
 

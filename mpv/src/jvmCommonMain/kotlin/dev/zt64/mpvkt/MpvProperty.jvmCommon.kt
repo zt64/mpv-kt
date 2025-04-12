@@ -47,8 +47,7 @@ public actual fun Mpv.setProperty(name: String, value: ByteArray) {
 }
 
 public actual fun <T> Mpv.observeProperty(name: String, callback: (T) -> Unit) {
-    // LibMpv.observeProperty(handle, 0u, name, MpvFormat.NONE.ordinal).checkError()
-    TODO()
+    LibMpv.observeProperty(handle, generateReplyId(), name)
 }
 
 public actual fun Mpv.unobserveProperty(name: String) = LibMpv.unobserveProperty(handle, 0)

@@ -4,7 +4,7 @@ import dev.zt64.mpvkt.LibMpv
 import dev.zt64.mpvkt.MpvRenderUpdateCallback
 
 public actual class MpvRenderContext internal constructor(private val ctx: Long) : AutoCloseable {
-    public actual fun getInfo(param: MpvRenderParam): Any {
+    public actual fun getInfo(param: MpvRenderParam): Any? {
         TODO("Only next frame info is supported, so maybe this should replaced with a function that returns the next frame info")
         // return LibMpv.renderContextGetInfo(ctx, param)
     }

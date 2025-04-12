@@ -96,7 +96,7 @@ internal object LibMpv {
     external fun getPropertyMap(handle: MpvHandle, property: String): Map<String, MpvNode>?
 
     @JvmStatic
-    external fun observeProperty(handle: MpvHandle, property: String, format: Int)
+    external fun observeProperty(handle: MpvHandle, id: Long, property: String)
 
     @JvmStatic
     external fun unobserveProperty(handle: MpvHandle, id: Long)

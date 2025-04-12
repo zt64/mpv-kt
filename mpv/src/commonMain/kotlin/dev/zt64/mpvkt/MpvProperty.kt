@@ -53,4 +53,4 @@ public expect fun <T> Mpv.observeProperty(name: String, callback: (T) -> Unit)
 
 public expect fun Mpv.unobserveProperty(name: String)
 
-public expect fun Mpv.delProperty(name: String)
+public expect fun Mpv.deleteProperty(name: String)
