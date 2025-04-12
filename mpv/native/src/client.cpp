@@ -89,6 +89,24 @@ jni_func(void, commandString, const jlong handle, jobjectArray jarray) {
     const int len = env->GetArrayLength(jarray);
 }
 
+jni_func(void, commandAsync, const jlong handle, const jlong reply, jobjectArray jarray) {
+    const char* arguments[128] = {nullptr};
+    const int len = env->GetArrayLength(jarray);
+
+    for (int i = 0; i < len; ++i) {
+        arguments[i] = env->GetStringUTFChars(
+            reinterpret_cast<jstring>(env->GetObjectArrayElement(jarray, i)),
+            nullptr
+        );
+    }
+
+    mpv_command_async(reinterpret_cast<mpv_handle *>(handle), reply, arguments);
+
+    for (int i = 0; i < len; ++i) {
+        env->ReleaseStringUTFChars(reinterpret_cast<jstring>(env->GetObjectArrayElement(jarray, i)), arguments[i]);
+    }
+}
+
 jni_func(jstring, clientName, const jlong handle) {
     return env->NewStringUTF(mpv_client_name(reinterpret_cast<mpv_handle *>(handle)));
 }

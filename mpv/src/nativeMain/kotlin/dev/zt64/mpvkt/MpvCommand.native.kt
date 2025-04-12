@@ -12,7 +12,7 @@ public actual suspend fun Mpv.command(vararg args: String) {
     }.checkError()
 }
 
-public actual fun Mpv.commandNode(vararg args: MpvNode): MpvNode = memScoped {
+public actual fun <T : MpvNode> Mpv.command(vararg args: MpvNode): T = memScoped {
     // val result = alloc<mpv_node>()
     // mpv_command_node(
     //     ctx = handle,
@@ -35,7 +35,7 @@ public actual suspend fun Mpv.commandAsync(vararg args: String) {
     }
 }
 
-public actual suspend fun Mpv.commandNodeAsync(vararg args: MpvNode): MpvNode {
+public actual suspend fun <T : MpvNode> Mpv.commandAsync(vararg args: MpvNode): T {
     // val replyCode = generateReplyId().toULong()
     // memScoped {
     //     mpv_command_node_async(
@@ -47,6 +47,6 @@ public actual suspend fun Mpv.commandNodeAsync(vararg args: MpvNode): MpvNode {
     TODO()
 }
 
-public actual inline fun Mpv.abortAsyncCommand(id: ULong) {
-    mpv_abort_async_command(handle, id)
+public actual fun Mpv.abortAsyncCommand(id: Long) {
+    mpv_abort_async_command(handle, id.toULong())
 }

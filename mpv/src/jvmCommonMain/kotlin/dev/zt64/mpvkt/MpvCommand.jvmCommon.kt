@@ -8,19 +8,18 @@ public actual suspend fun Mpv.command(vararg args: String) {
     }
 }
 
-public actual fun Mpv.commandNode(vararg args: MpvNode): MpvNode {
+public actual fun <T : MpvNode> Mpv.command(vararg args: MpvNode): T {
     TODO()
 }
 
 public actual suspend fun Mpv.commandAsync(vararg args: String) {
-    LibMpv.commandAsync(handle, 0, args as Array<String>)
+    LibMpv.commandAsync(handle, generateReplyId(), args as Array<String>)
+}
+
+public actual suspend fun <T : MpvNode> Mpv.commandAsync(vararg args: MpvNode): T {
     TODO()
 }
 
-public actual suspend fun Mpv.commandNodeAsync(vararg args: MpvNode): MpvNode {
-    TODO()
-}
-
-public actual fun Mpv.abortAsyncCommand(id: ULong) {
-    LibMpv.abortAsyncCommand(handle, id.toLong())
+public actual fun Mpv.abortAsyncCommand(id: Long) {
+    LibMpv.abortAsyncCommand(handle, id)
 }
