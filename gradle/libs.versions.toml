@@ -2,7 +2,7 @@
 kotlin = "2.1.20"
 android = "8.7.3"
 coroutines = "1.10.1"
-compose = "1.7.3"
+compose = "1.9.0"
 appcompat = "1.7.0"
 calf = "0.7.1"
 
