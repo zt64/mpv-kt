@@ -70,11 +70,18 @@ jni_func(void, command, const jlong handle, jobjectArray jarray) {
     const char* arguments[128] = {nullptr};
     const int len = env->GetArrayLength(jarray);
 
-    for (int i = 0; i < len; ++i) {
-        arguments[i] = env->GetStringUTFChars(
-            reinterpret_cast<jstring>(env->GetObjectArrayElement(jarray, i)),
-            nullptr
-        );
+    for (int i = 0; i < len; i++) {
+        jstring jstr = (jstring)env->GetObjectArrayElement(jarray, i);
+
+        if (jstr != nullptr) {
+            const char* c_str = env->GetStringUTFChars(jstr, nullptr);
+
+            if (c_str != nullptr) {
+                arguments[i] = c_str;
+            }
+
+            env->DeleteLocalRef(jstr);
+        }
     }
 
     mpv_command(reinterpret_cast<mpv_handle *>(handle), arguments);

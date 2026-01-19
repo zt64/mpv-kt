@@ -194,15 +194,15 @@ for (target in targets) {
         dockcrossTag = tag
         image = dockcrossImage
         containerName = "dockcross-${project.name}-$classifier"
-
-        if (isCi) {
-            runner(DockerRunner())
-            doLast {
-                exec {
-                    commandLine("docker", "image", "rm", "$repo:$tag")
-                }
-            }
-        }
+        unsafeWritableMountSource = true
+//        if (isCi) {
+//            runner(DockerRunner())
+//            doLast {
+//                project.exec { // doesnt work lol
+//                    commandLine("docker", "image", "rm", "$repo:$tag")
+//                }
+//            }
+//        }
     }
 
     val packageNative = tasks.register("packageNative$taskSuffix", Jar::class) {

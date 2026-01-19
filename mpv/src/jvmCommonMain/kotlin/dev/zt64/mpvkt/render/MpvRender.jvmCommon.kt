@@ -7,5 +7,5 @@ public actual fun Mpv.renderContextCreate(
     apiType: MpvRenderApiType,
     params: List<RenderParam>
 ): MpvRenderContext {
-    return MpvRenderContext(LibMpv.renderContextCreate(handle, apiType, listOf()))
+    return MpvRenderContext(apiType, LibMpv.renderContextCreate(handle, apiType, params.toTypedArray()))
 }
