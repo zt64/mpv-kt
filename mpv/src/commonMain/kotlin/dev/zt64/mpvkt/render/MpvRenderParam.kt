@@ -2,6 +2,7 @@ package dev.zt64.mpvkt.render
 
 import dev.zt64.mpvkt.MpvNode
 import kotlin.jvm.JvmField
+import kotlin.jvm.JvmName
 
 public sealed class RenderParam(
     @JvmField
@@ -33,12 +34,12 @@ public sealed class RenderParam(
 
             public data class FlipY(@JvmField val flipY: Boolean) : RenderParam(
                 MpvRenderParamType.FLIP_Y,
-                if (flipY) 1L else 0L
+                flipY
             )
 
-            public data class Depth(val depth: Boolean) : RenderParam(
+            public data class Depth(val depth: Int) : RenderParam(
                 MpvRenderParamType.DEPTH,
-                if (depth) 1L else 0L
+                depth
             )
 
             public data class IccProfile(val profile: String) : RenderParam(
