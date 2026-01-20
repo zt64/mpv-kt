@@ -6,9 +6,9 @@
 #include "render_gl.h"
 #include <iostream>
 
-typedef void* (*mpv_get_proc_address_fn)(void* ctx, const char* name);
+typedef void * (*mpv_get_proc_address_fn)(void *ctx, const char *name);
 
-int getRenderParamType(JNIEnv* env, jobject param, jclass paramCls) {
+int getRenderParamType(JNIEnv *env, jobject param, jclass paramCls) {
     jfieldID typeField = env->GetFieldID(
         paramCls,
         "type",
@@ -29,9 +29,9 @@ int getRenderParamType(JNIEnv* env, jobject param, jclass paramCls) {
     return typeValue;
 }
 
-const char* getRenderParamAPIType(JNIEnv* env, jobject apiType) {
+const char *getRenderParamAPIType(JNIEnv *env, jobject apiType) {
     const jint ordinal = env->CallIntMethod(apiType, mpv_MpvRenderApiType_getOrdinal);
-    const char* apiTypeName = nullptr;
+    const char *apiTypeName = nullptr;
 
     switch (ordinal) {
         case 0:
@@ -45,22 +45,24 @@ const char* getRenderParamAPIType(JNIEnv* env, jobject apiType) {
 
     return apiTypeName;
 }
+
 jni_func(jlong, renderContextCreate, const jlong handle, const jobject apiType, const jobjectArray params) {
     const jsize len = env->GetArrayLength(params);
-    auto* cparams = new mpv_render_param[len + 2]; // +2 for MPV_RENDER_PARAM_API_TYPE and MPV_RENDER_PARAM_INVALID
-
+    auto *cparams = new mpv_render_param[len + 2];
     cparams[0] = {
         MPV_RENDER_PARAM_API_TYPE,
         const_cast<char *>(getRenderParamAPIType(env, apiType)),
     };
 
+
     for (jsize i = 0; i < len; i++) {
         jobject obj = env->GetObjectArrayElement(params, i);
         jclass cls = env->GetObjectClass(obj);
+        auto type = static_cast<mpv_render_param_type>(getRenderParamType(env, obj, cls));
 
-        switch (getRenderParamType(env, obj, cls)) {
-            case MPV_RENDER_PARAM_OPENGL_INIT_PARAMS:
-            {
+        cparams[i + 1].type = type;
+        switch (type) {
+            case MPV_RENDER_PARAM_OPENGL_INIT_PARAMS: {
                 jfieldID procAddressFid = env->GetFieldID(cls, "getProcAddress", "J");
                 jlong procAddress = env->GetLongField(obj, procAddressFid);
 
@@ -69,13 +71,84 @@ jni_func(jlong, renderContextCreate, const jlong handle, const jobject apiType, 
 
                 mpv_opengl_init_params gl_init = {
                     .get_proc_address = reinterpret_cast<mpv_get_proc_address_fn>(procAddress),
-                    .get_proc_address_ctx = reinterpret_cast<void*>(procAddressCtx),
+                    .get_proc_address_ctx = reinterpret_cast<void *>(procAddressCtx),
                 };
 
-                cparams[i + 1] = {
-                    .type = MPV_RENDER_PARAM_OPENGL_INIT_PARAMS,
-                    .data = &gl_init,
+                cparams[i + 1].data = &gl_init;
+                break;
+            }
+
+            case MPV_RENDER_PARAM_OPENGL_FBO: {
+                const auto fboFieldId = env->GetFieldID(cls, "fbo", "I");
+                const auto wFieldId = env->GetFieldID(cls, "w", "I");
+                const auto hFieldId = env->GetFieldID(cls, "h", "I");
+                const auto internalFormatFieldId = env->GetFieldID(cls, "internalFormat", "I");
+
+                const jint fbo = env->GetIntField(obj, fboFieldId);
+                const jint w = env->GetIntField(obj, wFieldId);
+                const jint h = env->GetIntField(obj, hFieldId);
+                const jint internalFormat = env->GetIntField(obj, internalFormatFieldId);
+
+                mpv_opengl_fbo mpv_fbo = {
+                    .fbo = fbo,
+                    .w = w,
+                    .h = h,
+                    .internal_format = internalFormat,
                 };
+
+                cparams[i + 1].data = &mpv_fbo;
+                break;
+            }
+            // long
+            case MPV_RENDER_PARAM_SW_POINTER: {
+                const auto data = env->GetFieldID(cls, "data", "Ljava/lang/Object;");
+                long longValue = env->GetLongField(obj, data);
+
+                cparams[i + 1].data = &longValue;
+                break;
+            }
+            // int
+            case MPV_RENDER_PARAM_DEPTH:
+            case MPV_RENDER_PARAM_DRM_DRAW_SURFACE_SIZE:
+            case MPV_RENDER_PARAM_SW_SIZE:
+            case MPV_RENDER_PARAM_SW_FORMAT:
+            case MPV_RENDER_PARAM_SW_STRIDE: {
+                const auto data = env->GetFieldID(cls, "data", "Ljava/lang/Object;");
+                int integer = env->GetIntField(obj, data);
+
+                cparams[i + 1].data = &integer;
+                break;
+            }
+            // bool
+            case MPV_RENDER_PARAM_FLIP_Y:
+            case MPV_RENDER_PARAM_ADVANCED_CONTROL:
+            case MPV_RENDER_PARAM_BLOCK_FOR_TARGET_TIME:
+            case MPV_RENDER_PARAM_SKIP_RENDERING: {
+                const auto data = env->GetFieldID(cls, "data", "Ljava/lang/Object;");
+                bool boolean = env->GetBooleanField(obj, data);
+
+                cparams[i + 1].data = &boolean;
+                break;
+            }
+            // float
+            case MPV_RENDER_PARAM_AMBIENT_LIGHT: {
+                const auto data = env->GetFieldID(cls, "data", "Ljava/lang/Object;");
+                float ambientLight = env->GetFloatField(obj, data);
+
+                cparams[i + 1].data = &ambientLight;
+                break;
+            }
+            // string
+            case MPV_RENDER_PARAM_ICC_PROFILE:
+            case MPV_RENDER_PARAM_X11_DISPLAY:
+            case MPV_RENDER_PARAM_WL_DISPLAY:
+            case MPV_RENDER_PARAM_DRM_DISPLAY:
+            case MPV_RENDER_PARAM_DRM_DISPLAY_V2: {
+                const auto data = env->GetFieldID(cls, "data", "Ljava/lang/String;");
+                auto jStringParam = reinterpret_cast<jstring>(env->GetObjectField(obj, data));
+                auto cstringParam = env->GetStringUTFChars(jStringParam, reinterpret_cast<jboolean *>(true));
+                cparams[i + 1].data = &cstringParam;
+                env->ReleaseStringUTFChars(jStringParam, cstringParam);
                 break;
             }
 
@@ -88,12 +161,12 @@ jni_func(jlong, renderContextCreate, const jlong handle, const jobject apiType, 
         env->DeleteLocalRef(cls);
     }
 
+
     cparams[len + 1] = {
         MPV_RENDER_PARAM_INVALID,
         nullptr
     };
-
-    mpv_render_context* res;
+    mpv_render_context *res;
     const int result = mpv_render_context_create(&res, reinterpret_cast<mpv_handle *>(handle), cparams);
     handleMpvError(env, result);
 
@@ -149,8 +222,8 @@ jni_func(jobject, renderContextGetInfo, const jlong ctx, const jint param) {
 
 static jobject renderUpdateCallback = nullptr;
 
-static void renderCallback(void* ctx) {
-    auto* env = static_cast<JNIEnv *>(ctx);
+static void renderCallback(void *ctx) {
+    auto *env = static_cast<JNIEnv *>(ctx);
     if (renderUpdateCallback != nullptr) env->CallVoidMethod(renderUpdateCallback, mpv_MpvRenderUpdateCallback_invoke);
 }
 
@@ -171,73 +244,128 @@ jni_func(jlong, renderContextUpdate, const jlong ctx) {
 }
 
 jni_func(int, renderContextRender, const jlong ctx, jobject type, jobjectArray params) {
-    auto apiTypeName = getRenderParamAPIType(env, type);
-
     const jsize len = env->GetArrayLength(params);
-    auto* cparams = new mpv_render_param[len + 2];
+    auto *cparams = new mpv_render_param[len + 2];
 
     cparams[0] = {
-        .type = MPV_RENDER_PARAM_API_TYPE,
-        .data = static_cast<void*>(&apiTypeName),
+        MPV_RENDER_PARAM_API_TYPE,
+        const_cast<char *>(getRenderParamAPIType(env, type)),
     };
 
-    for (int i = 0; i < len; i++) {
-        const auto renderParamObj = env->GetObjectArrayElement(params, i);
-        const auto renderParamCls = env->GetObjectClass(renderParamObj);
+    for (jsize i = 0; i < len; i++) {
+        jobject obj = env->GetObjectArrayElement(params, i);
+        jclass cls = env->GetObjectClass(obj);
+        auto type = static_cast<mpv_render_param_type>(getRenderParamType(env, obj, cls));
 
-        switch (getRenderParamType(env, renderParamObj, renderParamCls)) {
+        cparams[i + 1].type = type;
+        switch (type) {
+            case MPV_RENDER_PARAM_OPENGL_INIT_PARAMS: {
+                jfieldID procAddressFid = env->GetFieldID(cls, "getProcAddress", "J");
+                jlong procAddress = env->GetLongField(obj, procAddressFid);
+
+                jfieldID addressCtxFid = env->GetFieldID(cls, "getProcAddressCtx", "J");
+                jlong procAddressCtx = env->GetLongField(obj, addressCtxFid);
+
+                mpv_opengl_init_params gl_init = {
+                    .get_proc_address = reinterpret_cast<mpv_get_proc_address_fn>(procAddress),
+                    .get_proc_address_ctx = reinterpret_cast<void *>(procAddressCtx),
+                };
+
+                cparams[i + 1].data = &gl_init;
+                break;
+            }
+
             case MPV_RENDER_PARAM_OPENGL_FBO: {
-                const auto fboFieldId = env->GetFieldID(renderParamCls, "fbo", "I");
-                const auto wFieldId = env->GetFieldID(renderParamCls, "w", "I");
-                const auto hFieldId = env->GetFieldID(renderParamCls, "h", "I");
-                const auto internalFormatFieldId = env->GetFieldID(renderParamCls, "internalFormat", "I");
+                const auto fboFieldId = env->GetFieldID(cls, "fbo", "I");
+                const auto wFieldId = env->GetFieldID(cls, "w", "I");
+                const auto hFieldId = env->GetFieldID(cls, "h", "I");
+                const auto internalFormatFieldId = env->GetFieldID(cls, "internalFormat", "I");
 
-                const jint fbo = env->GetIntField(renderParamObj, fboFieldId);
-                const jint w = env->GetIntField(renderParamObj, wFieldId);
-                const jint h = env->GetIntField(renderParamObj, hFieldId);
-                const jint internalFormat = env->GetIntField(renderParamObj, internalFormatFieldId);
+                const jint fbo = env->GetIntField(obj, fboFieldId);
+                const jint w = env->GetIntField(obj, wFieldId);
+                const jint h = env->GetIntField(obj, hFieldId);
+                const jint internalFormat = env->GetIntField(obj, internalFormatFieldId);
 
                 mpv_opengl_fbo mpv_fbo = {
-                    .fbo =  fbo,
+                    .fbo = fbo,
                     .w = w,
                     .h = h,
                     .internal_format = internalFormat,
                 };
 
-                cparams[i + 1] = {
-                    .type = MPV_RENDER_PARAM_OPENGL_FBO,
-                    .data = &mpv_fbo,
-                };
+                cparams[i + 1].data = &mpv_fbo;
                 break;
             }
+            // long
+            case MPV_RENDER_PARAM_SW_POINTER: {
+                const auto data = env->GetFieldID(cls, "data", "Ljava/lang/Object;");
+                long longValue = env->GetLongField(obj, data);
 
-            case MPV_RENDER_PARAM_FLIP_Y: {
-                const auto flipYField = env->GetFieldID(renderParamCls, "flipY", "Z");
-                auto flipY = env->GetBooleanField(renderParamObj, flipYField) ? 1 : 0;
+                cparams[i + 1].data = &longValue;
+                break;
+            }
+            // int
+            case MPV_RENDER_PARAM_DEPTH:
+            case MPV_RENDER_PARAM_DRM_DRAW_SURFACE_SIZE:
+            case MPV_RENDER_PARAM_SW_SIZE:
+            case MPV_RENDER_PARAM_SW_FORMAT:
+            case MPV_RENDER_PARAM_SW_STRIDE: {
+                const auto data = env->GetFieldID(cls, "data", "Ljava/lang/Object;");
+                int integer = env->GetIntField(obj, data);
 
-                cparams[i + 1] = {
-                    .type = MPV_RENDER_PARAM_FLIP_Y,
-                    .data = &flipY,
-                };
+                cparams[i + 1].data = &integer;
+                break;
+            }
+            // bool
+            case MPV_RENDER_PARAM_FLIP_Y:
+            case MPV_RENDER_PARAM_ADVANCED_CONTROL:
+            case MPV_RENDER_PARAM_BLOCK_FOR_TARGET_TIME:
+            case MPV_RENDER_PARAM_SKIP_RENDERING: {
+                const auto data = env->GetFieldID(cls, "data", "Ljava/lang/Object;");
+                bool boolean = env->GetBooleanField(obj, data);
+
+                cparams[i + 1].data = &boolean;
+                break;
+            }
+            // float
+            case MPV_RENDER_PARAM_AMBIENT_LIGHT: {
+                const auto data = env->GetFieldID(cls, "data", "Ljava/lang/Object;");
+                float ambientLight = env->GetFloatField(obj, data);
+
+                cparams[i + 1].data = &ambientLight;
+                break;
+            }
+            // string
+            case MPV_RENDER_PARAM_ICC_PROFILE:
+            case MPV_RENDER_PARAM_X11_DISPLAY:
+            case MPV_RENDER_PARAM_WL_DISPLAY:
+            case MPV_RENDER_PARAM_DRM_DISPLAY:
+            case MPV_RENDER_PARAM_DRM_DISPLAY_V2: {
+                const auto data = env->GetFieldID(cls, "data", "Ljava/lang/String;");
+                auto jStringParam = reinterpret_cast<jstring>(env->GetObjectField(obj, data));
+                auto cstringParam = env->GetStringUTFChars(jStringParam, reinterpret_cast<jboolean *>(true));
+                cparams[i + 1].data = &cstringParam;
+                env->ReleaseStringUTFChars(jStringParam, cstringParam);
                 break;
             }
 
             default:
-                env->ThrowNew(mpv_MPVException, "Unsupported render parameter type");
+                env->ThrowNew(mpv_MPVException, "Unsupported parameter type");
         }
 
-        env->DeleteLocalRef(renderParamObj);
-        env->DeleteLocalRef(renderParamCls);
+
+        env->DeleteLocalRef(obj);
+        env->DeleteLocalRef(cls);
     }
 
+
     cparams[len + 1] = {
-        .type = MPV_RENDER_PARAM_INVALID,
-        .data = nullptr,
+        MPV_RENDER_PARAM_INVALID,
+        nullptr
     };
+    auto *mpvc = reinterpret_cast<mpv_render_context *>(ctx);
 
-    auto* mpvc = reinterpret_cast<mpv_render_context*>(ctx);
-
-    mpv_render_param* cparams_ptr = cparams;
+    mpv_render_param *cparams_ptr = cparams;
     const int result = mpv_render_context_render(mpvc, cparams_ptr);
     handleMpvError(env, result);
     mpv_render_context_report_swap(mpvc);
@@ -251,7 +379,7 @@ jni_func(jbyteArray, renderContextRenderSw, const jlong ctx, const jlongArray pa
     int h = 100;
     // Allocate a buffer for the pixel data
     size_t pitch = w * 4; // Assuming 4 bytes per pixel (e.g., 32-bit RGBA)
-    void* pixels = malloc(pitch * h);
+    void *pixels = malloc(pitch * h);
     if (pixels == nullptr) {
         return nullptr; // Memory allocation failed
     }
