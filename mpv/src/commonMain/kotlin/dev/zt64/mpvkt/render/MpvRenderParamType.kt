@@ -1,6 +1,11 @@
 package dev.zt64.mpvkt.render
 
 public enum class MpvRenderParamType {
+    // These aren't used anywhere in code,
+    // but It's useful to line up with the native enum ordinals.
+    INVALID,
+    API_TYPE,
+
     OPENGL_INIT_PARAMS,
     OPENGL_FBO,
     FLIP_Y,

@@ -8,9 +8,28 @@
 
 typedef void* (*mpv_get_proc_address_fn)(void* ctx, const char* name);
 
-jni_func(jlong, renderContextCreate, const jlong handle, const jobject apiType, const jobjectArray params) {
-    const jsize len = env->GetArrayLength(params);
-    auto* cparams = new mpv_render_param[len + 2]; // +2 for MPV_RENDER_PARAM_API_TYPE and MPV_RENDER_PARAM_INVALID
+int getRenderParamType(JNIEnv* env, jobject param, jclass paramCls) {
+    jfieldID typeField = env->GetFieldID(
+        paramCls,
+        "type",
+        "Ldev/zt64/mpvkt/render/MpvRenderParamType;"
+    );
+
+    jobject typeEnumObj = env->GetObjectField(param, typeField);
+    if (typeEnumObj == nullptr) return -1;
+
+    // Get the ordinal from the enum
+    jclass enumCls = env->GetObjectClass(typeEnumObj);
+    jmethodID ordinalMethod = env->GetMethodID(enumCls, "ordinal", "()I");
+    jint typeValue = env->CallIntMethod(typeEnumObj, ordinalMethod);
+
+    env->DeleteLocalRef(typeEnumObj);
+    env->DeleteLocalRef(enumCls);
+
+    return typeValue;
+}
+
+const char* getRenderParamAPIType(JNIEnv* env, jobject apiType) {
     const jint ordinal = env->CallIntMethod(apiType, mpv_MpvRenderApiType_getOrdinal);
     const char* apiTypeName = nullptr;
 
@@ -24,62 +43,49 @@ jni_func(jlong, renderContextCreate, const jlong handle, const jobject apiType, 
         default: break;
     }
 
+    return apiTypeName;
+}
+jni_func(jlong, renderContextCreate, const jlong handle, const jobject apiType, const jobjectArray params) {
+    const jsize len = env->GetArrayLength(params);
+    auto* cparams = new mpv_render_param[len + 2]; // +2 for MPV_RENDER_PARAM_API_TYPE and MPV_RENDER_PARAM_INVALID
+
     cparams[0] = {
         MPV_RENDER_PARAM_API_TYPE,
-        const_cast<char *>(apiTypeName),
+        const_cast<char *>(getRenderParamAPIType(env, apiType)),
     };
 
     for (jsize i = 0; i < len; i++) {
         jobject obj = env->GetObjectArrayElement(params, i);
         jclass cls = env->GetObjectClass(obj);
 
-        // not exposed as @JvmField, so we have to get the method for getType
-        jfieldID typeField = env->GetFieldID(
-            cls,
-            "type",
-            "Ldev/zt64/mpvkt/render/MpvRenderParamType;"
-        );
+        switch (getRenderParamType(env, obj, cls)) {
+            case MPV_RENDER_PARAM_OPENGL_INIT_PARAMS:
+            {
+                jfieldID procAddressFid = env->GetFieldID(cls, "getProcAddress", "J");
+                jlong procAddress = env->GetLongField(obj, procAddressFid);
 
-        jobject typeEnumObj = env->GetObjectField(obj, typeField);
-        if (typeEnumObj == nullptr) continue;
+                jfieldID addressCtxFid = env->GetFieldID(cls, "getProcAddressCtx", "J");
+                jlong procAddressCtx = env->GetLongField(obj, addressCtxFid);
 
-        // Get the ordinal from the enum
-        jclass enumCls = env->GetObjectClass(typeEnumObj);
-        jmethodID ordinalMethod = env->GetMethodID(enumCls, "ordinal", "()I");
-        jint typeValue = env->CallIntMethod(typeEnumObj, ordinalMethod);
+                mpv_opengl_init_params gl_init = {
+                    .get_proc_address = reinterpret_cast<mpv_get_proc_address_fn>(procAddress),
+                    .get_proc_address_ctx = reinterpret_cast<void*>(procAddressCtx),
+                };
 
-        if (typeValue == 0) { // OPENGL_INIT_PARAMS ordinal = 0
-            jfieldID procAddressFid = env->GetFieldID(cls, "getProcAddress", "J");
-            jlong procAddress = env->GetLongField(obj, procAddressFid);
+                cparams[i + 1] = {
+                    .type = MPV_RENDER_PARAM_OPENGL_INIT_PARAMS,
+                    .data = &gl_init,
+                };
+                break;
+            }
 
-            jfieldID addressCtxFid = env->GetFieldID(cls, "getProcAddressCtx", "J");
-            jlong procAddressCtx = env->GetLongField(obj, addressCtxFid);
-
-            mpv_opengl_init_params gl_init = {
-                .get_proc_address = reinterpret_cast<mpv_get_proc_address_fn>(procAddress),
-                .get_proc_address_ctx = reinterpret_cast<void*>(procAddressCtx),
-            };
-
-            cparams[i + 1] = {
-                .type = MPV_RENDER_PARAM_OPENGL_INIT_PARAMS,
-                .data = &gl_init,
-            };
-            // cparams[i + 1].type = MPV_RENDER_PARAM_OPENGL_INIT_PARAMS;
-            // cparams[i + 1].data = &gl_init;
-        } //else { // I've commented this out because it scares me.
-        //     std::cout << "Shoudlnt run" << std::endl;
-        //     fid = env->GetFieldID(cls, "data", "J");
-        //     const jlong data = env->GetLongField(obj, fid);
-        //
-        //     cparams[i + 1].type = static_cast<mpv_render_param_type>(type);
-        //     cparams[i + 1].data = reinterpret_cast<void *>(data);
-        // }
+            default:
+                env->ThrowNew(mpv_MPVException, "Unsupported parameter type");
+        }
 
 
         env->DeleteLocalRef(obj);
         env->DeleteLocalRef(cls);
-        env->DeleteLocalRef(typeEnumObj);
-        env->DeleteLocalRef(enumCls);
     }
 
     cparams[len + 1] = {
@@ -165,92 +171,64 @@ jni_func(jlong, renderContextUpdate, const jlong ctx) {
 }
 
 jni_func(int, renderContextRender, const jlong ctx, jobject type, jobjectArray params) {
-    jclass cls = env->GetObjectClass(type); // Render Context Class
-    jmethodID ordinalMethod = env->GetMethodID(cls, "ordinal", "()I");
-    jint apiType = env->CallIntMethod(type, ordinalMethod);
-
-    const char* apiTypeName = nullptr;
-
-    switch (apiType) {
-        case 0:
-            apiTypeName = MPV_RENDER_API_TYPE_OPENGL;
-            break;
-        case 1:
-            apiTypeName = MPV_RENDER_API_TYPE_SW;
-            break;
-        default: break;
-    }
-
+    auto apiTypeName = getRenderParamAPIType(env, type);
 
     const jsize len = env->GetArrayLength(params);
     auto* cparams = new mpv_render_param[len + 2];
 
     cparams[0] = {
         .type = MPV_RENDER_PARAM_API_TYPE,
-        .data = (void*)(apiTypeName),
+        .data = static_cast<void*>(&apiTypeName),
     };
 
     for (int i = 0; i < len; i++) {
-        const jobject renderParamObj = env->GetObjectArrayElement(params, i);
-        jclass renderParamCls = env->GetObjectClass(renderParamObj);
+        const auto renderParamObj = env->GetObjectArrayElement(params, i);
+        const auto renderParamCls = env->GetObjectClass(renderParamObj);
 
+        switch (getRenderParamType(env, renderParamObj, renderParamCls)) {
+            case MPV_RENDER_PARAM_OPENGL_FBO: {
+                const auto fboFieldId = env->GetFieldID(renderParamCls, "fbo", "I");
+                const auto wFieldId = env->GetFieldID(renderParamCls, "w", "I");
+                const auto hFieldId = env->GetFieldID(renderParamCls, "h", "I");
+                const auto internalFormatFieldId = env->GetFieldID(renderParamCls, "internalFormat", "I");
 
-        jfieldID typeField = env->GetFieldID(
-            renderParamCls,
-            "type",
-            "Ldev/zt64/mpvkt/render/MpvRenderParamType;"
-        );
+                const jint fbo = env->GetIntField(renderParamObj, fboFieldId);
+                const jint w = env->GetIntField(renderParamObj, wFieldId);
+                const jint h = env->GetIntField(renderParamObj, hFieldId);
+                const jint internalFormat = env->GetIntField(renderParamObj, internalFormatFieldId);
 
-        jobject typeEnumObj = env->GetObjectField(renderParamObj, typeField);
-        if (typeEnumObj == nullptr) continue;
+                mpv_opengl_fbo mpv_fbo = {
+                    .fbo =  fbo,
+                    .w = w,
+                    .h = h,
+                    .internal_format = internalFormat,
+                };
 
-        // Get the ordinal from the enum
-        jclass enumCls = env->GetObjectClass(typeEnumObj);
-        jmethodID typeOrdinal = env->GetMethodID(enumCls, "ordinal", "()I");
-        jint typeValue = env->CallIntMethod(typeEnumObj, typeOrdinal);
+                cparams[i + 1] = {
+                    .type = MPV_RENDER_PARAM_OPENGL_FBO,
+                    .data = &mpv_fbo,
+                };
+                break;
+            }
 
-        if (typeValue == 1) {
-            auto fboFieldId = env->GetFieldID(renderParamCls, "fbo", "I");
-            auto wFieldId = env->GetFieldID(renderParamCls, "w", "I");
-            auto hFieldId = env->GetFieldID(renderParamCls, "h", "I");
-            auto internalFormatFieldId = env->GetFieldID(renderParamCls, "internalFormat", "I");
+            case MPV_RENDER_PARAM_FLIP_Y: {
+                const auto flipYField = env->GetFieldID(renderParamCls, "flipY", "Z");
+                auto flipY = env->GetBooleanField(renderParamObj, flipYField) ? 1 : 0;
 
-            const jint fbo = env->GetIntField(renderParamObj, fboFieldId);
-            const jint w = env->GetIntField(renderParamObj, wFieldId);
-            const jint h = env->GetIntField(renderParamObj, hFieldId);
-            const jint internalFormat = env->GetIntField(renderParamObj, internalFormatFieldId);
+                cparams[i + 1] = {
+                    .type = MPV_RENDER_PARAM_FLIP_Y,
+                    .data = &flipY,
+                };
+                break;
+            }
 
-            mpv_opengl_fbo mpv_fbo = {
-                .fbo =  fbo,
-                .w = w,
-                .h = h,
-                .internal_format = internalFormat,
-            };
-
-            cparams[i + 1] = {
-                .type = MPV_RENDER_PARAM_OPENGL_FBO,
-                .data = &mpv_fbo,
-            };
-            continue;
+            default:
+                env->ThrowNew(mpv_MPVException, "Unsupported render parameter type");
         }
 
-        if (typeValue == 2) { // flip y, if it exists at all, even if it
-           auto flipYField = env->GetFieldID(renderParamCls, "flipY", "Z");
-           auto flipY = env->GetBooleanField(renderParamObj, flipYField) ? 1 : 0;
-
-           // laziness off the CHARTS!
-            cparams[i + 1] = {
-                .type = MPV_RENDER_PARAM_FLIP_Y,
-                .data = &flipY,
-            };
-        }
-
-        env->DeleteLocalRef(typeEnumObj);
-        env->DeleteLocalRef(enumCls);
         env->DeleteLocalRef(renderParamObj);
         env->DeleteLocalRef(renderParamCls);
     }
-    env->DeleteLocalRef(cls);
 
     cparams[len + 1] = {
         .type = MPV_RENDER_PARAM_INVALID,
