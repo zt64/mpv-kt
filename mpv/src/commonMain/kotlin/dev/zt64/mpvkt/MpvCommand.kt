@@ -10,7 +10,7 @@ internal fun generateReplyId() = Random.nextLong()
  * @param args
  * @return
  */
-public expect suspend fun Mpv.command(vararg args: String)
+public expect fun Mpv.command(vararg args: String)
 
 /**
  * TODO: Add documentation

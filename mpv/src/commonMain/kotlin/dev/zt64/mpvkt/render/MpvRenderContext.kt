@@ -7,9 +7,9 @@ import dev.zt64.mpvkt.MpvRenderUpdateCallback
  *
  */
 public expect class MpvRenderContext {
-    public fun getInfo(param: MpvRenderParam): Any?
+    public fun getInfo(param: RenderParam): Any?
 
-    public fun setParameter(param: MpvRenderParam, value: Any)
+    public fun setParameter(param: RenderParam, value: Any)
 
     /**
      * TODO
@@ -29,7 +29,7 @@ public expect class MpvRenderContext {
      *
      * @param params
      */
-    public fun render(params: List<MpvRenderParam> = emptyList())
+    public fun render(params: List<RenderParam> = emptyList())
 
     /**
      * Set the callback that notifies you when a new video frame is available, or if the video

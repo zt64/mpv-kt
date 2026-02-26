@@ -1,7 +1,7 @@
 package dev.zt64.mpvkt
 
 import dev.zt64.mpvkt.render.MpvRenderApiType
-import dev.zt64.mpvkt.render.MpvRenderParam
+import dev.zt64.mpvkt.render.RenderParam
 
 internal object LibMpv {
     init {
@@ -30,7 +30,7 @@ internal object LibMpv {
     external fun waitAsyncRequests(handle: MpvHandle)
 
     @JvmStatic
-    external fun command(handle: MpvHandle, cmd: Array<String>)
+    external fun command(handle: MpvHandle, cmd: Array<out String>)
 
     @JvmStatic
     external fun command(handle: MpvHandle, node: MpvNode)
@@ -137,22 +137,22 @@ internal object LibMpv {
     external fun loadConfigFile(handle: MpvHandle, path: String): Int
 
     @JvmStatic
-    external fun renderContextCreate(handle: MpvHandle, apiType: MpvRenderApiType, params: List<MpvRenderParam>): Long
+    external fun renderContextCreate(handle: MpvHandle, apiType: MpvRenderApiType, params: Array<RenderParam>): Long
 
     @JvmStatic
     external fun renderContextFree(ctx: Long)
 
     @JvmStatic
-    external fun renderContextGetInfo(ctx: Long, param: MpvRenderParam): Any
+    external fun renderContextGetInfo(ctx: Long, param: RenderParam): Any
 
     @JvmStatic
-    external fun renderContextSetParameter(ctx: Long, param: MpvRenderParam, value: Any)
+    external fun renderContextSetParameter(ctx: Long, param: RenderParam, value: Any)
 
     @JvmStatic
-    external fun renderContextUpdate(ctx: Long): ULong
+    external fun renderContextUpdate(ctx: Long): Long
 
     @JvmStatic
-    external fun renderContextRender(ctx: Long, params: Array<MpvRenderParam>)
+    external fun renderContextRender(ctx: Long, type: MpvRenderApiType, params: Array<RenderParam>)
 
     @JvmStatic
     external fun renderContextSetUpdateCallback(ctx: Long, callback: MpvRenderUpdateCallback)

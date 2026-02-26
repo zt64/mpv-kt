@@ -50,6 +50,6 @@ public actual fun <T> Mpv.observeProperty(name: String, callback: (T) -> Unit) {
     LibMpv.observeProperty(handle, generateReplyId(), name)
 }
 
-public actual fun Mpv.unobserveProperty(name: String) = LibMpv.unobserveProperty(handle, 0)
+public actual fun Mpv.unobserveProperty(name: String): Unit = LibMpv.unobserveProperty(handle, 0)
 
-public actual fun Mpv.deleteProperty(name: String) = LibMpv.delProperty(handle, name)
+public actual fun Mpv.deleteProperty(name: String): Unit = LibMpv.delProperty(handle, name)

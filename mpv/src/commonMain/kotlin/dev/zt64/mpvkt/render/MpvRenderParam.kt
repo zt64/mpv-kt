@@ -1,90 +1,120 @@
 package dev.zt64.mpvkt.render
 
 import dev.zt64.mpvkt.MpvNode
+import kotlin.jvm.JvmField
+import kotlin.jvm.JvmName
 
-public expect class MpvRenderParam
+public sealed class RenderParam(
+    @JvmField
+    public val type: MpvRenderParamType,
+    @JvmField
+    public val data: Any?,
+) {
+    public companion object {
+            public data class OpenGLInitParams(
+                @JvmField
+                val getProcAddress: Long,
+                @JvmField
+                val getProcAddressCtx: Long
+            ) : RenderParam(MpvRenderParamType.OPENGL_INIT_PARAMS, 0L)
 
-public expect fun MpvRenderParam(
-    name: String,
-    value: String
-): MpvRenderParam
+            public data class OpenGLFBO(
+                @JvmField
+                val fbo: Int,
+                @JvmField
+                val w: Int,
+                @JvmField
+                val h: Int,
+                @JvmField
+                val internalFormat: Int,
+            ) : RenderParam(
+                MpvRenderParamType.OPENGL_FBO,
+                fbo.toLong()
+            )
 
-public sealed interface RenderParam {
-    public val type: MpvRenderParamType
+            public data class FlipY(@JvmField val flipY: Boolean) : RenderParam(
+                MpvRenderParamType.FLIP_Y,
+                flipY
+            )
 
-    public data class OpenGLInitParams(val params: MpvNode) : RenderParam {
-        override val type: MpvRenderParamType = MpvRenderParamType.OPENGL_INIT_PARAMS
-    }
+            public data class Depth(val depth: Int) : RenderParam(
+                MpvRenderParamType.DEPTH,
+                depth
+            )
 
-    public data class OpenGLFBO(val fbo: Int) : RenderParam {
-        override val type: MpvRenderParamType = MpvRenderParamType.OPENGL_FBO
-    }
+            public data class IccProfile(val profile: String) : RenderParam(
+                MpvRenderParamType.ICC_PROFILE,
+                profile
+            )
 
-    public data class FlipY(val flipY: Boolean) : RenderParam {
-        override val type: MpvRenderParamType = MpvRenderParamType.FLIP_Y
-    }
+            public data class AmbientLight(val light: Float) : RenderParam(
+                MpvRenderParamType.AMBIENT_LIGHT,
+                light
+            )
 
-    public data class Depth(val depth: Boolean) : RenderParam {
-        override val type: MpvRenderParamType = MpvRenderParamType.DEPTH
-    }
+            public data class X11Display(val display: String) : RenderParam(
+                MpvRenderParamType.X11_DISPLAY,
+                display
+            )
 
-    public data class IccProfile(val profile: String) : RenderParam {
-        override val type: MpvRenderParamType = MpvRenderParamType.ICC_PROFILE
-    }
+            public data class WlDisplay(val display: String) : RenderParam(
+                MpvRenderParamType.WL_DISPLAY,
+                display
+            )
 
-    public data class AmbientLight(val light: Float) : RenderParam {
-        override val type: MpvRenderParamType = MpvRenderParamType.AMBIENT_LIGHT
-    }
+            public data class AdvancedControl(val control: Boolean) : RenderParam(
+                MpvRenderParamType.ADVANCED_CONTROL,
+                if (control) 1L else 0L
+            )
 
-    public data class X11Display(val display: String) : RenderParam {
-        override val type: MpvRenderParamType = MpvRenderParamType.X11_DISPLAY
-    }
+            public data class NextFrameInfo(val info: MpvNode) : RenderParam(
+                MpvRenderParamType.NEXT_FRAME_INFO,
+                info
+            )
 
-    public data class WlDisplay(val display: String) : RenderParam {
-        override val type: MpvRenderParamType = MpvRenderParamType.WL_DISPLAY
-    }
+            public data class BlockForTargetTime(val block: Boolean) : RenderParam(
+                MpvRenderParamType.BLOCK_FOR_TARGET_TIME,
+                if (block) 1L else 0L
+            )
 
-    public data class AdvancedControl(val control: Boolean) : RenderParam {
-        override val type: MpvRenderParamType = MpvRenderParamType.ADVANCED_CONTROL
-    }
+            public data class SkipRendering(val skip: Boolean) : RenderParam(
+                MpvRenderParamType.SKIP_RENDERING,
+                if (skip) 1L else 0L
+            )
 
-    public data class NextFrameInfo(val info: MpvNode) : RenderParam {
-        override val type: MpvRenderParamType = MpvRenderParamType.NEXT_FRAME_INFO
-    }
+            public data class DrmDisplay(val display: String) : RenderParam(
+                MpvRenderParamType.DRM_DISPLAY,
+                display
+            )
 
-    public data class BlockForTargetTime(val block: Boolean) : RenderParam {
-        override val type: MpvRenderParamType = MpvRenderParamType.BLOCK_FOR_TARGET_TIME
-    }
+            public data class DrmDrawSurfaceSize(val size: Int) : RenderParam(
+                MpvRenderParamType.DRM_DRAW_SURFACE_SIZE,
+                size.toLong()
+            )
 
-    public data class SkipRendering(val skip: Boolean) : RenderParam {
-        override val type: MpvRenderParamType = MpvRenderParamType.SKIP_RENDERING
-    }
+            public data class DrmDisplayV2(val display: String) : RenderParam(
+                MpvRenderParamType.DRM_DISPLAY_V2,
+                display
+            )
 
-    public data class DrmDisplay(val display: String) : RenderParam {
-        override val type: MpvRenderParamType = MpvRenderParamType.DRM_DISPLAY
-    }
+            public data class SwSize(val size: Int) : RenderParam(
+                MpvRenderParamType.SW_SIZE,
+                size.toLong()
+            )
 
-    public data class DrmDrawSurfaceSize(val size: Int) : RenderParam {
-        override val type: MpvRenderParamType = MpvRenderParamType.DRM_DRAW_SURFACE_SIZE
-    }
+            public data class SwFormat(val format: Int) : RenderParam(
+                MpvRenderParamType.SW_FORMAT,
+                format.toLong()
+            )
 
-    public data class DrmDisplayV2(val display: String) : RenderParam {
-        override val type: MpvRenderParamType = MpvRenderParamType.DRM_DISPLAY_V2
-    }
+            public data class SwStride(val stride: Int) : RenderParam(
+                MpvRenderParamType.SW_STRIDE,
+                stride.toLong()
+            )
 
-    public data class SwSize(val size: Int) : RenderParam {
-        override val type: MpvRenderParamType = MpvRenderParamType.SW_SIZE
-    }
-
-    public data class SwFormat(val format: Int) : RenderParam {
-        override val type: MpvRenderParamType = MpvRenderParamType.SW_FORMAT
-    }
-
-    public data class SwStride(val stride: Int) : RenderParam {
-        override val type: MpvRenderParamType = MpvRenderParamType.SW_STRIDE
-    }
-
-    public data class SwPointer(val pointer: Long) : RenderParam {
-        override val type: MpvRenderParamType = MpvRenderParamType.SW_POINTER
-    }
+            public data class SwPointer(val pointer: Long) : RenderParam(
+                MpvRenderParamType.SW_POINTER,
+                pointer
+            )
+        }
 }
